@@ -1,0 +1,482 @@
+/* Kwekwe Polytechnic Chat Widget CSS */
+.kwekwe-chat-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(45deg, #1e3a8a, #7c3aed);
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 
+        0 15px 30px rgba(30, 58, 138, 0.4),
+        0 8px 16px rgba(124, 58, 237, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2),
+        0 0 0 3px rgba(255, 215, 0, 0.3);
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite, floatButton 3s ease-in-out infinite;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@keyframes floatButton {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.kwekwe-chat-button:hover {
+    transform: translateY(-5px) rotateY(10deg);
+    box-shadow: 
+        0 20px 40px rgba(30, 58, 138, 0.5),
+        0 10px 20px rgba(124, 58, 237, 0.4);
+}
+
+.kwekwe-chat-button i {
+    font-size: 1.8rem;
+    color: #FFD700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+.kwekwe-chat-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 380px;
+    height: 550px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    box-shadow: 
+        0 25px 50px rgba(30, 58, 138, 0.3),
+        0 15px 30px rgba(124, 58, 237, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    display: none;
+    flex-direction: column;
+    z-index: 9999;
+    transform-style: preserve-3d;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.kwekwe-chat-header {
+    background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+    color: white;
+    padding: 15px;
+    border-radius: 23px 23px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.kwekwe-chat-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+    animation: shimmerHeader 3s infinite;
+}
+
+@keyframes shimmerHeader {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.kwekwe-chat-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1;
+}
+
+.kwekwe-chat-logo {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #1e3a8a;
+    font-size: 8px;
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        0 0 0 2px rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.kwekwe-chat-logo::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('https://kwekwepoly.ac.zw/logo.png') center/contain no-repeat;
+    animation: logoRotate 20s infinite linear;
+}
+
+@keyframes logoRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.kwekwe-chat-status {
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+}
+
+.kwekwe-chat-name {
+    font-weight: bold;
+    font-size: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.kwekwe-online-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.kwekwe-status-dot {
+    width: 6px;
+    height: 6px;
+    background: #00ff00;
+    border-radius: 50%;
+    animation: blink 2s infinite;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.kwekwe-close-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.kwekwe-close-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.kwekwe-chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #f8fafc, #e2e8f0);
+    position: relative;
+}
+
+.kwekwe-chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kwekwe-chat-messages::-webkit-scrollbar-track {
+    background: rgba(30, 58, 138, 0.1);
+    border-radius: 3px;
+}
+
+.kwekwe-chat-messages::-webkit-scrollbar-thumb {
+    background: #1e3a8a;
+    border-radius: 3px;
+}
+
+.kwekwe-message {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    animation: messageSlide 0.5s ease-out;
+}
+
+@keyframes messageSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.kwekwe-message.user {
+    justify-content: flex-end;
+}
+
+.kwekwe-message-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    margin: 0 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.kwekwe-message.user .kwekwe-message-avatar {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #1e3a8a;
+    order: 2;
+}
+
+.kwekwe-message.bot .kwekwe-message-avatar {
+    background: linear-gradient(45deg, #1e3a8a, #7c3aed);
+    order: 1;
+}
+
+.kwekwe-message-content {
+    max-width: 70%;
+    padding: 12px 15px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    position: relative;
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.1),
+        0 4px 8px rgba(0, 0, 0, 0.05);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.kwekwe-message.user .kwekwe-message-content {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #1e3a8a;
+    border-bottom-right-radius: 8px;
+    order: 1;
+}
+
+.kwekwe-message.bot .kwekwe-message-content {
+    background: white;
+    color: #1a202c;
+    border-bottom-left-radius: 8px;
+    order: 2;
+    border: 1px solid rgba(30, 58, 138, 0.1);
+}
+
+.kwekwe-typing-indicator {
+    display: none;
+    padding: 12px 15px;
+    background: white;
+    border-radius: 18px;
+    border-bottom-left-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(30, 58, 138, 0.1);
+    max-width: 70%;
+}
+
+.kwekwe-typing-dots {
+    display: flex;
+    gap: 5px;
+}
+
+.kwekwe-typing-dot {
+    width: 8px;
+    height: 8px;
+    background: #1e3a8a;
+    border-radius: 50%;
+    animation: typing3d 1.4s infinite;
+}
+
+.kwekwe-typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.kwekwe-typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing3d {
+    0%, 60%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    30% { 
+        opacity: 0.5; 
+        transform: scale(0.8);
+    }
+}
+
+.kwekwe-chat-input {
+    padding: 15px;
+    border-top: 1px solid rgba(30, 58, 138, 0.1);
+    display: flex;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+}
+
+.kwekwe-input-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+.kwekwe-chat-input input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid rgba(30, 58, 138, 0.2);
+    border-radius: 20px;
+    outline: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.kwekwe-chat-input input:focus {
+    border-color: #1e3a8a;
+    box-shadow: 
+        0 0 0 3px rgba(30, 58, 138, 0.1),
+        inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.kwekwe-send-button {
+    background: linear-gradient(45deg, #1e3a8a, #7c3aed);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 8px 16px rgba(30, 58, 138, 0.3),
+        0 4px 8px rgba(124, 58, 237, 0.2);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.kwekwe-send-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.kwekwe-send-button:hover::before {
+    left: 100%;
+}
+
+.kwekwe-send-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 12px 24px rgba(30, 58, 138, 0.4),
+        0 6px 12px rgba(124, 58, 237, 0.3);
+}
+
+.kwekwe-send-button:active {
+    transform: translateY(0);
+}
+
+.kwekwe-welcome-message {
+    text-align: center;
+    padding: 25px 15px;
+    animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.kwekwe-welcome-logo {
+    font-size: 2.5rem;
+    color: #1e3a8a;
+    margin-bottom: 12px;
+}
+
+.kwekwe-welcome-text {
+    color: #4a5568;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+.kwekwe-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.kwekwe-suggestion-chip {
+    background: linear-gradient(45deg, #1e3a8a, #7c3aed);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 8px rgba(30, 58, 138, 0.2);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.kwekwe-suggestion-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(30, 58, 138, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .kwekwe-chat-container {
+        width: 95%;
+        height: 80vh;
+        right: 2.5%;
+        bottom: 10px;
+    }
+    
+    .kwekwe-chat-button {
+        width: 60px;
+        height: 60px;
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .kwekwe-chat-button i {
+        font-size: 1.5rem;
+    }
+}
