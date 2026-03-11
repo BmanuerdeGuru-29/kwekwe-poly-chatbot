@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, List
@@ -15,6 +15,18 @@ from backend.config.settings import settings
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/chat", tags=["chat"])
 security = HTTPBearer(auto_error=False)
+
+
+def _get_client_id(request: Request) -> str:
+    """Resolve a stable client identifier for rate limiting."""
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+
+    if request.client and request.client.host:
+        return request.client.host
+
+    return "anonymous"
 
 
 class ChatRequest(BaseModel):
@@ -63,6 +75,7 @@ async def verify_session(session_id: Optional[str] = None) -> str:
 
 @router.post("/query", response_model=ChatResponse)
 async def chat_query(
+    request_context: Request,
     request: ChatRequest,
     background_tasks: BackgroundTasks,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
@@ -70,8 +83,8 @@ async def chat_query(
     """Main chat endpoint"""
     try:
         # Rate limiting check
-        client_ip = "client_ip"  # Would get from request in real implementation
-        if not rate_limiter.is_allowed(client_ip):
+        client_id = _get_client_id(request_context)
+        if not rate_limiter.is_allowed(client_id):
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
         
         # Verify/create session
@@ -114,10 +127,13 @@ async def chat_query(
             response=response_data["answer"],
             session_id=session_id,
             sources=response_data.get("sources"),
+            tool_results=response_data.get("tool_results"),
             timestamp=response_data.get("timestamp", datetime.now().isoformat()),
             query_type=response_data.get("query_type", "rag")
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Chat query error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -125,6 +141,7 @@ async def chat_query(
 
 @router.post("/tools/execute", response_model=ToolResponse)
 async def execute_tool_endpoint(
+    request_context: Request,
     request: ToolRequest,
     background_tasks: BackgroundTasks,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
@@ -132,8 +149,8 @@ async def execute_tool_endpoint(
     """Execute LangChain tools"""
     try:
         # Rate limiting check
-        client_ip = "client_ip"
-        if not rate_limiter.is_allowed(client_ip):
+        client_id = _get_client_id(request_context)
+        if not rate_limiter.is_allowed(client_id):
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
         
         # Verify/create session
@@ -160,6 +177,8 @@ async def execute_tool_endpoint(
             timestamp=datetime.now().isoformat()
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Tool execution error: {str(e)}")
         raise HTTPException(status_code=500, detail="Tool execution failed")
@@ -173,10 +192,18 @@ async def list_tools():
         tool_list = []
         
         for tool in tools:
+            schema = {}
+            if tool.args_schema:
+                schema = (
+                    tool.args_schema.model_json_schema()
+                    if hasattr(tool.args_schema, "model_json_schema")
+                    else tool.args_schema.schema()
+                )
+
             tool_list.append({
                 "name": tool.name,
                 "description": tool.description,
-                "args_schema": tool.args_schema.schema() if tool.args_schema else {}
+                "args_schema": schema
             })
         
         return {"tools": tool_list, "count": len(tool_list)}

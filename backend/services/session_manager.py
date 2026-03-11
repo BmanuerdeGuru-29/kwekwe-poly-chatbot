@@ -13,28 +13,51 @@ logger = logging.getLogger(__name__)
 class SessionManager:
     def __init__(self):
         self.redis_client = None
+        self.memory_store = {}
         self.session_ttl = 3600  # 1 hour
-        self._initialize_redis()
+        self._initialized = False
+        self._initialization_lock = asyncio.Lock()
     
-    async def _initialize_redis(self):
+    async def initialize(self):
         """Initialize Redis connection"""
+        if self._initialized:
+            return
+
+        async with self._initialization_lock:
+            if self._initialized:
+                return
+
+            try:
+                self.redis_client = redis.from_url(
+                    settings.REDIS_URL,
+                    encoding="utf-8",
+                    decode_responses=True
+                )
+                await self.redis_client.ping()
+                logger.info("Redis connection established")
+            except Exception as e:
+                logger.warning(f"Redis connection failed: {str(e)}. Using in-memory storage.")
+                self.redis_client = None
+            finally:
+                self._initialized = True
+
+    async def _ensure_store_ready(self):
+        """Ensure a storage backend is available before handling requests."""
+        if not self._initialized:
+            await self.initialize()
+
+    async def _initialize_redis(self):
+        """Backward-compatible alias for older call sites."""
         try:
-            self.redis_client = redis.from_url(
-                settings.REDIS_URL,
-                encoding="utf-8",
-                decode_responses=True
-            )
-            # Test connection
-            await self.redis_client.ping()
-            logger.info("Redis connection established")
-        except Exception as e:
-            logger.warning(f"Redis connection failed: {str(e)}. Using in-memory storage.")
+            await self.initialize()
+        except Exception:
             self.redis_client = None
             self.memory_store = {}
     
     async def create_session(self, session_id: str, user_data: Dict[str, Any]) -> bool:
         """Create a new session"""
         try:
+            await self._ensure_store_ready()
             session_data = {
                 "session_id": session_id,
                 "created_at": datetime.now().isoformat(),
@@ -63,6 +86,7 @@ class SessionManager:
     async def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
         """Get session data"""
         try:
+            await self._ensure_store_ready()
             if self.redis_client:
                 session_data = await self.redis_client.get(f"session:{session_id}")
                 if session_data:
@@ -79,6 +103,7 @@ class SessionManager:
     async def update_session(self, session_id: str, updates: Dict[str, Any]) -> bool:
         """Update session data"""
         try:
+            await self._ensure_store_ready()
             session = await self.get_session(session_id)
             if not session:
                 return False
@@ -130,6 +155,7 @@ class SessionManager:
     async def get_conversation_history(self, session_id: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Get conversation history"""
         try:
+            await self._ensure_store_ready()
             session = await self.get_session(session_id)
             if not session:
                 return []
@@ -148,6 +174,7 @@ class SessionManager:
     async def get_context(self, session_id: str) -> Dict[str, Any]:
         """Get session context"""
         try:
+            await self._ensure_store_ready()
             session = await self.get_session(session_id)
             if not session:
                 return {}
@@ -161,6 +188,7 @@ class SessionManager:
     async def delete_session(self, session_id: str) -> bool:
         """Delete session"""
         try:
+            await self._ensure_store_ready()
             if self.redis_client:
                 await self.redis_client.delete(f"session:{session_id}")
             else:
@@ -176,6 +204,7 @@ class SessionManager:
     
     async def cleanup_expired_sessions(self):
         """Clean up expired sessions (for in-memory storage)"""
+        await self._ensure_store_ready()
         if self.redis_client:
             return  # Redis handles TTL automatically
         
@@ -200,6 +229,7 @@ class SessionManager:
     async def get_session_stats(self) -> Dict[str, Any]:
         """Get session statistics"""
         try:
+            await self._ensure_store_ready()
             if self.redis_client:
                 # Get all session keys
                 keys = await self.redis_client.keys("session:*")

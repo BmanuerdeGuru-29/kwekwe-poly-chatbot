@@ -1,8 +1,9 @@
-import os
-import asyncio
 from typing import List, Dict, Any, Optional
 import logging
 from pathlib import Path
+from io import BytesIO
+import hashlib
+import re
 import aiofiles
 import PyPDF2
 from docx import Document as DocxDocument
@@ -17,7 +18,8 @@ logger = logging.getLogger(__name__)
 class DocumentIngestion:
     def __init__(self):
         self.supported_formats = {".pdf", ".txt", ".docx", ".md"}
-        self.ingested_count = 0
+        self.chunk_size = 900
+        self.chunk_overlap = 150
     
     async def ingest_directory(self, directory_path: str) -> bool:
         """Ingest all documents from a directory"""
@@ -28,22 +30,12 @@ class DocumentIngestion:
                 return False
             
             documents = []
-            for file_path in directory.rglob("*"):
+            for file_path in sorted(directory.rglob("*")):
                 if file_path.is_file() and file_path.suffix.lower() in self.supported_formats:
                     try:
                         content = await self._extract_text(file_path)
                         if content:
-                            documents.append({
-                                "id": f"{file_path.stem}_{self.ingested_count}",
-                                "text": content,
-                                "metadata": {
-                                    "source": str(file_path),
-                                    "filename": file_path.name,
-                                    "file_type": file_path.suffix.lower(),
-                                    "category": self._categorize_document(file_path.name)
-                                }
-                            })
-                            self.ingested_count += 1
+                            documents.extend(self._build_documents(file_path, content))
                     except Exception as e:
                         logger.error(f"Error processing {file_path}: {str(e)}")
                         continue
@@ -83,9 +75,10 @@ class DocumentIngestion:
         text = ""
         async with aiofiles.open(file_path, 'rb') as file:
             content = await file.read()
-            pdf_reader = PyPDF2.PdfReader(content)
+            pdf_reader = PyPDF2.PdfReader(BytesIO(content))
             for page in pdf_reader.pages:
-                text += page.extract_text() + "\n"
+                page_text = page.extract_text() or ""
+                text += page_text + "\n"
         return text
     
     async def _extract_txt_text(self, file_path: Path) -> str:
@@ -130,9 +123,86 @@ class DocumentIngestion:
             return "examinations"
         else:
             return "general"
+
+    def _build_documents(self, file_path: Path, content: str) -> List[Dict[str, Any]]:
+        """Split a source document into retrieval-friendly chunks."""
+        chunks = self._chunk_text(content)
+        category = self._categorize_document(file_path.name)
+        documents = []
+
+        for chunk_index, chunk in enumerate(chunks):
+            documents.append({
+                "id": self._build_document_id(file_path, chunk_index),
+                "text": chunk,
+                "metadata": {
+                    "source": str(file_path),
+                    "filename": file_path.name,
+                    "file_type": file_path.suffix.lower(),
+                    "category": category,
+                    "chunk_index": chunk_index,
+                    "chunk_count": len(chunks)
+                }
+            })
+
+        return documents
+
+    def _build_document_id(self, file_path: Path, chunk_index: int) -> str:
+        """Create stable ids so re-ingestion updates existing chunks instead of duplicating them."""
+        digest = hashlib.sha1(f"{file_path.resolve()}:{chunk_index}".encode("utf-8")).hexdigest()[:12]
+        return f"{file_path.stem}_{chunk_index}_{digest}"
+
+    def _chunk_text(self, text: str) -> List[str]:
+        """Chunk long content for better retrieval quality."""
+        normalized = re.sub(r"\n{3,}", "\n\n", text).strip()
+        if not normalized:
+            return []
+
+        if len(normalized) <= self.chunk_size:
+            return [normalized]
+
+        chunks = []
+        start = 0
+        text_length = len(normalized)
+
+        while start < text_length:
+            end = min(start + self.chunk_size, text_length)
+
+            if end < text_length:
+                split_candidates = [
+                    normalized.rfind("\n\n", start, end),
+                    normalized.rfind(". ", start, end),
+                    normalized.rfind("\n", start, end),
+                ]
+                best_split = max(split_candidates)
+                if best_split > start + self.chunk_overlap:
+                    end = best_split + (2 if normalized[best_split:best_split + 2] == ". " else 0)
+
+            chunk = normalized[start:end].strip()
+            if chunk:
+                chunks.append(chunk)
+
+            if end >= text_length:
+                break
+
+            start = max(end - self.chunk_overlap, start + 1)
+
+        return chunks
+
+    async def ensure_knowledge_base(self) -> bool:
+        """Populate the vector store from repository documents if it is empty."""
+        current_count = vector_store.get_collection_stats().get("document_count", 0)
+        if current_count:
+            logger.info("Knowledge base already populated")
+            return True
+
+        return await self.create_sample_documents()
     
     async def create_sample_documents(self) -> bool:
-        """Create sample documents for testing"""
+        """Create or ingest seed documents for testing and local development."""
+        repository_docs_dir = Path("data/sample_docs")
+        if repository_docs_dir.exists() and any(repository_docs_dir.iterdir()):
+            return await self.ingest_directory(str(repository_docs_dir))
+
         sample_docs_dir = Path(settings.CHROMA_DB_PATH).parent / "sample_docs"
         sample_docs_dir.mkdir(exist_ok=True)
         

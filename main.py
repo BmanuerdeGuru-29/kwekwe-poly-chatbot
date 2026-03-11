@@ -1,9 +1,10 @@
-import asyncio
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from backend.config.settings import settings
 from backend.utils.logger import logger
@@ -11,6 +12,7 @@ from backend.api.chat import router as chat_router
 from backend.api.webhooks.whatsapp import router as whatsapp_router
 from backend.core.document_ingestion import document_ingestion
 from backend.core.rag_engine import rag_engine
+from backend.services.session_manager import session_manager
 
 
 @asynccontextmanager
@@ -20,13 +22,15 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Kwekwe Polytechnic Chatbot...")
     
     try:
-        # Initialize sample documents and vector store
+        logger.info("Initializing session storage...")
+        await session_manager.initialize()
+
         logger.info("Initializing document ingestion...")
-        success = await document_ingestion.create_sample_documents()
+        success = await document_ingestion.ensure_knowledge_base()
         if success:
-            logger.info("Sample documents created and ingested successfully")
+            logger.info("Knowledge base is ready")
         else:
-            logger.warning("Failed to create sample documents")
+            logger.warning("Failed to seed the knowledge base")
         
         # Test RAG engine
         logger.info("Testing RAG engine...")
@@ -64,8 +68,8 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Include routers
-app.include_router(chat_router)
-app.include_router(whatsapp_router)
+app.include_router(chat_router, prefix=settings.API_V1_STR)
+app.include_router(whatsapp_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
@@ -91,7 +95,7 @@ async def health_check():
         
         return {
             "status": "healthy",
-            "timestamp": "2026-03-02T08:44:00Z",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "version": settings.VERSION,
             "rag_engine": rag_health,
             "environment": "development" if settings.DEBUG else "production"
@@ -106,7 +110,7 @@ async def health_check():
 async def global_exception_handler(request, exc):
     """Global exception handler"""
     logger.error(f"Unhandled exception: {str(exc)}")
-    return HTTPException(status_code=500, detail="Internal server error")
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 if __name__ == "__main__":

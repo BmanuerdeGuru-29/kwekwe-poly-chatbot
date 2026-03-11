@@ -36,6 +36,9 @@ class VectorStore:
     def add_documents(self, documents: List[Dict[str, Any]]):
         """Add documents to the vector store"""
         try:
+            if not documents:
+                return False
+
             texts = [doc["text"] for doc in documents]
             metadatas = [doc.get("metadata", {}) for doc in documents]
             ids = [doc.get("id", f"doc_{i}") for i, doc in enumerate(documents)]
@@ -44,7 +47,7 @@ class VectorStore:
             embeddings = self.embedding_model.encode(texts).tolist()
             
             # Add to collection
-            self.collection.add(
+            self.collection.upsert(
                 documents=texts,
                 metadatas=metadatas,
                 ids=ids,
@@ -61,13 +64,17 @@ class VectorStore:
     def query(self, query_text: str, n_results: int = 5) -> Dict[str, Any]:
         """Query the vector store"""
         try:
+            collection_count = self.collection.count()
+            if collection_count == 0:
+                return {"documents": [], "metadatas": [], "distances": []}
+
             # Generate query embedding
             query_embedding = self.embedding_model.encode([query_text]).tolist()
             
             # Search collection
             results = self.collection.query(
                 query_embeddings=query_embedding,
-                n_results=n_results,
+                n_results=min(n_results, collection_count),
                 include=["documents", "metadatas", "distances"]
             )
             
