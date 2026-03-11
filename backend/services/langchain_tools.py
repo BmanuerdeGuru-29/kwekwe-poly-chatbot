@@ -42,37 +42,11 @@ class StudentVerificationTool(BaseTool):
     async def _arun(self, student_id: str, date_of_birth: str) -> Dict[str, Any]:
         """Verify student identity"""
         try:
-            # In a real implementation, this would call the PHP API
-            # For now, we'll simulate the verification process
-            
-            # Simulate API call to PHP system
-            async with httpx.AsyncClient() as client:
-                headers = {}
-                if self.api_key:
-                    headers["Authorization"] = f"Bearer {self.api_key}"
-                
-                # Mock verification logic
-                # In production, this would be: response = await client.post(f"{self.php_api_url}/verify", ...)
-                
-                # Simulate successful verification
-                if student_id.startswith("KP") and len(student_id) == 8:
-                    return {
-                        "status": "success",
-                        "verified": True,
-                        "student_info": {
-                            "student_id": student_id,
-                            "full_name": "John Doe",  # Mock data
-                            "program": "Automotive Engineering",
-                            "year_of_study": 2,
-                            "verification_timestamp": datetime.now().isoformat()
-                        }
-                    }
-                else:
-                    return {
-                        "status": "error",
-                        "verified": False,
-                        "error": "Invalid student ID or date of birth"
-                    }
+            return {
+                "status": "unavailable",
+                "verified": False,
+                "error": "Live student verification has not been integrated in this deployment yet."
+            }
                     
         except Exception as e:
             logger.error(f"Student verification error: {str(e)}")
@@ -100,34 +74,10 @@ class FeeBalanceTool(BaseTool):
     async def _arun(self, student_id: str) -> Dict[str, Any]:
         """Get fee balance for student"""
         try:
-            # In production, this would call the PHP API
-            # For now, we'll simulate the response
-            
-            if student_id.startswith("KP") and len(student_id) == 8:
-                # Mock fee data
-                return {
-                    "status": "success",
-                    "student_id": student_id,
-                    "fee_balance": {
-                        "usd": 150.00,
-                        "zig": 6000.00,
-                        "total_due_usd": 450.00,
-                        "total_due_zig": 18000.00,
-                        "last_payment": {
-                            "date": "2026-01-15",
-                            "amount_usd": 300.00,
-                            "amount_zig": 12000.00,
-                            "method": "Paynow"
-                        },
-                        "due_date": "2026-02-28",
-                        "currency": "both"  # USD and ZiG accepted
-                    }
-                }
-            else:
-                return {
-                    "status": "error",
-                    "error": "Student not found"
-                }
+            return {
+                "status": "unavailable",
+                "error": "Live fee balances are not available until the student account system is integrated."
+            }
                 
         except Exception as e:
             logger.error(f"Fee balance error: {str(e)}")
@@ -154,48 +104,10 @@ class ExamResultsTool(BaseTool):
     async def _arun(self, student_id: str, exam_type: str) -> Dict[str, Any]:
         """Get exam results for student"""
         try:
-            # In production, this would call the PHP API
-            # For now, we'll simulate the response
-            
-            if student_id.startswith("KP") and len(student_id) == 8:
-                # Mock exam results
-                if exam_type.upper() == "HEXCO":
-                    return {
-                        "status": "success",
-                        "student_id": student_id,
-                        "exam_type": "HEXCO",
-                        "exam_session": "November 2025",
-                        "results_posted": "2026-01-23",
-                        "subjects": [
-                            {"name": "Mathematics", "grade": "B", "score": 75},
-                            {"name": "Engineering Science", "grade": "A", "score": 82},
-                            {"name": "Technical Drawing", "grade": "B+", "score": 78},
-                            {"name": "Workshop Practice", "grade": "A-", "score": 80}
-                        ],
-                        "overall_grade": "B",
-                        "gpa": 3.2,
-                        "status": "PASSED",
-                        "certificate_available": True
-                    }
-                else:
-                    return {
-                        "status": "success",
-                        "student_id": student_id,
-                        "exam_type": exam_type,
-                        "semester": "Semester 1 2025",
-                        "results": [
-                            {"course": "Automotive Systems", "score": 78, "grade": "B"},
-                            {"course": "Engine Repair", "score": 85, "grade": "A"},
-                            {"course": "Electrical Systems", "score": 72, "grade": "B-"}
-                        ],
-                        "semester_gpa": 3.1,
-                        "status": "PROMOTED"
-                    }
-            else:
-                return {
-                    "status": "error",
-                    "error": "Student not found or results not available"
-                }
+            return {
+                "status": "unavailable",
+                "error": "Live examination results are not available until the examinations system is integrated."
+            }
                 
         except Exception as e:
             logger.error(f"Exam results error: {str(e)}")

@@ -75,10 +75,8 @@ OFFICE_DIRECTORY: Dict[str, Dict[str, Any]] = {
 class CustomRetriever(BaseRetriever):
     """Custom retriever that uses our vector store."""
 
-    def __init__(self, vector_store_instance, top_k: int = 5):
-        super().__init__()
-        self.vector_store = vector_store_instance
-        self.top_k = top_k
+    vector_store: Any
+    top_k: int = 5
 
     def _get_relevant_documents(self, query: str, **kwargs) -> List[Document]:
         try:
@@ -126,7 +124,7 @@ class RAGEngine:
                 logger.warning("OpenAI API key not configured. Using retrieval-only responses.")
                 self.llm = None
 
-            self.retriever = CustomRetriever(vector_store, top_k=5)
+            self.retriever = CustomRetriever(vector_store=vector_store, top_k=5)
             prompt_template = """
             You are the official AI assistant for Kwekwe Polytechnic in Zimbabwe.
             Answer only from the provided context. If the answer is incomplete, say so clearly.

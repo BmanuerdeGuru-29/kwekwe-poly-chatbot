@@ -27,6 +27,12 @@
 - Updated the live frontend to call the corrected health and chat endpoints.
 - Added the Kwekwe Poly logo to the frontend folder and updated the visible motto to `Beyond The Information Given`.
 - Simplified the frontend Docker image to serve the existing static frontend directly.
+- Added confidence-aware chat responses, office handoff suggestions, suggested next actions, and a search endpoint over the indexed knowledge base.
+- Added JSONL-backed analytics and feedback capture for query monitoring and answer-quality review.
+- Added admin endpoints and a browser-based admin console for local ingestion, upload-driven indexing, website sync, analytics, and feedback review.
+- Added a lightweight official-website sync service for crawling approved Kwekwe domains into the vector store.
+- Rebuilt the public frontend into a branded, mobile-friendly assistant with guided journeys, search, language selection, citations, and feedback controls.
+- Removed unsafe mock personal-data behavior from student verification, balances, and results flows until real institutional integrations are connected.
 
 ## Highest-Value Next Enhancements
 

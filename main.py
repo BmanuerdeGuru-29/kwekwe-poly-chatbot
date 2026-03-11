@@ -84,6 +84,9 @@ async def root():
         "status": "running",
         "endpoints": {
             "chat": "/api/v1/chat",
+            "search": "/api/v1/chat/search",
+            "feedback": "/api/v1/chat/feedback",
+            "admin": "/api/v1/admin",
             "whatsapp_webhook": "/api/v1/webhooks/whatsapp",
             "health": "/api/v1/chat/health"
         }
