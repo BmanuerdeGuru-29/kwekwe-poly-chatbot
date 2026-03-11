@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, List
 import os
 
 
@@ -13,11 +13,13 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     DEBUG: bool = False
+    ALLOWED_ORIGINS: str = "*"
     
     # Security
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ADMIN_API_KEY: Optional[str] = None
     
     # LLM Configuration
     OPENAI_API_KEY: Optional[str] = None
@@ -27,6 +29,17 @@ class Settings(BaseSettings):
     # Vector Database
     CHROMA_DB_PATH: str = "./data/vector_store"
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+    UPLOAD_DIR: str = "./data/uploads"
+    FEEDBACK_FILE: str = "./data/feedback/feedback.jsonl"
+    ANALYTICS_FILE: str = "./data/analytics/chat_events.jsonl"
+    WEBSITE_SYNC_SEEDS: str = (
+        "https://www.kwekwepoly.ac.zw/,"
+        "https://www.kwekwepoly.ac.zw/portal.php,"
+        "https://www.kwekwepoly.ac.zw/hostel.php,"
+        "https://www.kwekwepoly.ac.zw/commerce.php,"
+        "https://apply.kwekwepoly.ac.zw/"
+    )
+    MAX_WEBSITE_SYNC_PAGES: int = 25
     
     # WhatsApp Configuration
     WHATSAPP_PHONE_NUMBER_ID: Optional[str] = None

@@ -8,8 +8,9 @@ from datetime import datetime
 
 from backend.core.rag_engine import rag_engine
 from backend.services.session_manager import session_manager
+from backend.services.analytics_store import analytics_store
 from backend.services.langchain_tools import execute_tool, get_available_tools
-from backend.utils.security import rate_limiter
+from backend.utils.security import rate_limiter, input_validator
 from backend.config.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ class ChatRequest(BaseModel):
     session_id: Optional[str] = Field(None, description="Session ID for conversation continuity")
     context: Optional[Dict[str, Any]] = Field(None, description="Additional context")
     use_tools: Optional[bool] = Field(False, description="Whether to use LangChain tools")
+    language: Optional[str] = Field("en", description="Preferred response language")
 
 
 class ChatResponse(BaseModel):
@@ -41,6 +43,11 @@ class ChatResponse(BaseModel):
     session_id: str
     sources: Optional[List[Dict[str, Any]]] = None
     tool_results: Optional[Dict[str, Any]] = None
+    confidence: Optional[Dict[str, Any]] = None
+    handoff: Optional[Dict[str, Any]] = None
+    suggested_actions: Optional[List[Dict[str, Any]]] = None
+    language: Optional[str] = None
+    intent: Optional[str] = None
     timestamp: str
     query_type: str
 
@@ -55,6 +62,19 @@ class ToolResponse(BaseModel):
     result: Dict[str, Any]
     session_id: Optional[str] = None
     timestamp: str
+
+
+class SearchRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=500)
+    limit: int = Field(default=5, ge=1, le=10)
+
+
+class FeedbackRequest(BaseModel):
+    session_id: str
+    message_content: str
+    helpful: bool
+    comment: Optional[str] = Field(default=None, max_length=500)
+    intent: Optional[str] = None
 
 
 async def verify_session(session_id: Optional[str] = None) -> str:
@@ -86,16 +106,22 @@ async def chat_query(
         client_id = _get_client_id(request_context)
         if not rate_limiter.is_allowed(client_id):
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
+
+        sanitized_message = input_validator.sanitize_input(request.message)
+        if not sanitized_message:
+            raise HTTPException(status_code=400, detail="Message cannot be empty")
         
         # Verify/create session
         session_id = await verify_session(request.session_id)
+        session_context = await session_manager.get_context(session_id)
+        preferred_language = (request.language or session_context.get("language") or "en").lower()
         
         # Add user message to history
         await session_manager.add_message(
             session_id,
             {
                 "role": "user",
-                "content": request.message,
+                "content": sanitized_message,
                 "timestamp": datetime.now().isoformat()
             }
         )
@@ -103,10 +129,14 @@ async def chat_query(
         # Process the query
         if request.use_tools:
             # Try to use LangChain tools first
-            response_data = await _process_with_tools(request.message, session_id)
+            response_data = await _process_with_tools(sanitized_message, session_id, preferred_language)
         else:
             # Use RAG engine
-            response_data = await rag_engine.query(request.message, session_id)
+            response_data = await rag_engine.query(
+                sanitized_message,
+                session_id,
+                preferred_language=preferred_language
+            )
         
         # Add bot response to history
         await session_manager.add_message(
@@ -120,14 +150,37 @@ async def chat_query(
         )
         
         # Update session context if provided
+        updated_context = dict(session_context or {})
         if request.context:
-            await session_manager.set_context(session_id, request.context)
+            updated_context.update(request.context)
+        updated_context["language"] = preferred_language
+        await session_manager.set_context(session_id, updated_context)
+
+        await analytics_store.record_chat_event(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "session_id": session_id,
+                "client_id": client_id,
+                "message": sanitized_message,
+                "language": preferred_language,
+                "intent": response_data.get("intent", "general"),
+                "confidence": response_data.get("confidence"),
+                "handoff": response_data.get("handoff"),
+                "query_type": response_data.get("query_type"),
+                "use_tools": bool(request.use_tools),
+            }
+        )
         
         return ChatResponse(
             response=response_data["answer"],
             session_id=session_id,
             sources=response_data.get("sources"),
             tool_results=response_data.get("tool_results"),
+            confidence=response_data.get("confidence"),
+            handoff=response_data.get("handoff"),
+            suggested_actions=response_data.get("suggested_actions"),
+            language=preferred_language,
+            intent=response_data.get("intent"),
             timestamp=response_data.get("timestamp", datetime.now().isoformat()),
             query_type=response_data.get("query_type", "rag")
         )
@@ -211,6 +264,38 @@ async def list_tools():
     except Exception as e:
         logger.error(f"List tools error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to list tools")
+
+
+@router.post("/search")
+async def search_knowledge_base(request: SearchRequest):
+    """Search the indexed knowledge base without generating a full answer."""
+    try:
+        sanitized_query = input_validator.sanitize_input(request.query, max_length=500)
+        results = await rag_engine.search(sanitized_query, limit=request.limit)
+        return {"results": results, "count": len(results)}
+    except Exception as e:
+        logger.error(f"Search error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Search failed")
+
+
+@router.post("/feedback")
+async def submit_feedback(request: FeedbackRequest):
+    """Capture user feedback for model and content improvement."""
+    try:
+        await analytics_store.record_feedback(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "session_id": request.session_id,
+                "message_content": request.message_content,
+                "helpful": request.helpful,
+                "comment": request.comment,
+                "intent": request.intent,
+            }
+        )
+        return {"status": "received"}
+    except Exception as e:
+        logger.error(f"Feedback error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to record feedback")
 
 
 @router.get("/session/{session_id}")
@@ -307,61 +392,70 @@ async def health_check():
         }
 
 
-async def _process_with_tools(message: str, session_id: str) -> Dict[str, Any]:
+async def _process_with_tools(message: str, session_id: str, preferred_language: str) -> Dict[str, Any]:
     """Process message using LangChain tools"""
     try:
         # Simple keyword-based tool selection
         message_lower = message.lower()
         
         if "verify" in message_lower and "student" in message_lower:
-            # Extract student ID and DOB (simplified)
-            student_id = "KP123456"  # Would extract from message
-            date_of_birth = "2000-01-01"  # Would extract from message
-            
-            result = await execute_tool("student_verification", student_id=student_id, date_of_birth=date_of_birth)
-            
             return {
-                "answer": f"Student verification result: {result.get('status', 'Unknown')}",
+                "answer": "Student verification is not yet connected to the live institutional system in this deployment. Please use the official portal or contact the relevant office for verified personal records.",
                 "sources": [],
-                "tool_results": result,
-                "query_type": "tool"
+                "tool_results": None,
+                "query_type": "verification_required",
+                "intent": "student_verification",
+                "confidence": {"label": "low", "score": 0.2},
+                "suggested_actions": [
+                    {"label": "Open Student Portal", "type": "link", "url": "http://elearning.kwekwepoly.ac.zw/"}
+                ],
+                "handoff": {
+                    "office": "ICT Unit",
+                    "message": "Use the official portal or ICT support for verified student access.",
+                    "contact": {"phone": "+263 711 806 837", "email": "infor@kwekwepoly.ac.zw"},
+                    "links": [{"label": "Student Portal", "url": "http://elearning.kwekwepoly.ac.zw/"}],
+                },
             }
         
-        elif "fee" in message_lower or "balance" in message_lower:
-            student_id = "KP123456"  # Would get from session context
-            result = await execute_tool("fee_balance", student_id=student_id)
-            
-            if result.get("status") == "success":
-                fee_info = result["fee_balance"]
-                answer = f"Your fee balance is ${fee_info['usd']:.2f} USD or {fee_info['zig']:.2f} ZiG. Due date: {fee_info['due_date']}"
-            else:
-                answer = "Unable to retrieve fee balance. Please verify your student ID first."
-            
+        elif "balance" in message_lower or ("fee" in message_lower and any(token in message_lower for token in ["my", "account", "owed"])):
             return {
-                "answer": answer,
+                "answer": "Verified fee balances are not yet connected to a live student account system here. For a personal balance, please use the official student channels or contact the Accounts Office.",
                 "sources": [],
-                "tool_results": result,
-                "query_type": "tool"
+                "tool_results": None,
+                "query_type": "verification_required",
+                "intent": "fees",
+                "confidence": {"label": "low", "score": 0.2},
+                "suggested_actions": [
+                    {"label": "Payment Methods", "type": "prompt", "prompt": "What payment methods are available for fees?"}
+                ],
+                "handoff": {
+                    "office": "Accounts Office",
+                    "message": "For verified balances or receipting issues, contact Accounts.",
+                    "contact": {"phone": "+263 8612 122991", "email": "infor@kwekwepoly.ac.zw"},
+                    "links": [{"label": "Official Website", "url": "https://www.kwekwepoly.ac.zw/"}],
+                },
             }
         
-        elif "result" in message_lower or "exam" in message_lower:
-            student_id = "KP123456"  # Would get from session context
-            exam_type = "HEXCO" if "hexco" in message_lower else "SEMESTER"
-            result = await execute_tool("exam_results", student_id=student_id, exam_type=exam_type)
-            
-            if result.get("status") == "success":
-                answer = f"Your {exam_type} results are available. Overall grade: {result.get('overall_grade', 'N/A')}"
-            else:
-                answer = "Unable to retrieve exam results. Please verify your student ID first."
-            
+        elif ("result" in message_lower or "exam" in message_lower) and any(token in message_lower for token in ["my", "account", "student id", "status"]):
             return {
-                "answer": answer,
+                "answer": "Personal examination results should only be accessed through verified institutional channels. Please contact the Examinations Office or use the official student systems.",
                 "sources": [],
-                "tool_results": result,
-                "query_type": "tool"
+                "tool_results": None,
+                "query_type": "verification_required",
+                "intent": "results",
+                "confidence": {"label": "low", "score": 0.2},
+                "suggested_actions": [
+                    {"label": "HEXCO Guidance", "type": "prompt", "prompt": "What should students know about HEXCO results?"}
+                ],
+                "handoff": {
+                    "office": "Examinations Office",
+                    "message": "For official results or collection guidance, contact Examinations.",
+                    "contact": {"phone": "+263 8612 122991", "email": "infor@kwekwepoly.ac.zw"},
+                    "links": [{"label": "Official Website", "url": "https://www.kwekwepoly.ac.zw/"}],
+                },
             }
         
-        elif "payment" in message_lower or "pay" in message_lower:
+        elif "payment" in message_lower or "pay" in message_lower or "fee" in message_lower:
             result = await execute_tool("payment_methods")
             
             if result.get("status") == "success":
@@ -374,7 +468,10 @@ async def _process_with_tools(message: str, session_id: str) -> Dict[str, Any]:
                 "answer": answer,
                 "sources": [],
                 "tool_results": result,
-                "query_type": "tool"
+                "query_type": "tool",
+                "intent": "payments",
+                "confidence": {"label": "high", "score": 0.9},
+                "suggested_actions": [],
             }
         
         elif "ict" in message_lower or "support" in message_lower or "portal" in message_lower:
@@ -390,16 +487,22 @@ async def _process_with_tools(message: str, session_id: str) -> Dict[str, Any]:
                 "answer": answer,
                 "sources": [],
                 "tool_results": result,
-                "query_type": "tool"
+                "query_type": "tool",
+                "intent": "ict_support",
+                "confidence": {"label": "high", "score": 0.9},
+                "suggested_actions": [],
             }
         
         # Fallback to RAG if no tool matches
-        return await rag_engine.query(message, session_id)
+        return await rag_engine.query(message, session_id, preferred_language=preferred_language)
         
     except Exception as e:
         logger.error(f"Tool processing error: {str(e)}")
         return {
             "answer": "I'm having trouble processing your request. Please try again or contact support.",
             "sources": [],
-            "query_type": "error"
+            "query_type": "error",
+            "intent": "error",
+            "confidence": {"label": "low", "score": 0.0},
+            "suggested_actions": [],
         }

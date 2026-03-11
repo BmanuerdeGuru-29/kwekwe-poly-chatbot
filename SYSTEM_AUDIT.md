@@ -47,6 +47,72 @@
 - Use the institutional line `Beyond The Information Given` as the primary supporting text under the college name.
 - Add an institutional footer note that answers are sourced from official Kwekwe Polytechnic documents and may direct users to admissions or ICT for authoritative follow-up.
 
+## Benchmark Comparison
+
+- Compared with Penn State's LionChat, this project is architecturally flexible but still narrower in operational coverage. LionChat spans admissions, bursar, registrar, and student-aid questions across multiple enrollment sites, while this repo still depends on a smaller bundled knowledge set and mock student-service tools.
+- Compared with Western Washington University's Fisher, this project already has a stronger self-hosted engineering base, but Fisher is more mature in routing users to the right office when the bot is not the best channel.
+- Compared with the University of Houston's Shasta, this project has the right direction for student-specific workflows, but not the production readiness. Shasta already supports personalized questions like balances, transcript receipt, and FAFSA status, while `backend/services/langchain_tools.py` is still placeholder logic.
+- Compared with Northwood University's AI search and chatbot experience, this bot is behind on website-wide discovery. Northwood pairs chat with AI search, instant summaries, and user feedback loops across the site.
+- Compared with Ocelot-style higher-ed platforms, this project is behind in multilingual delivery, live-chat escalation, analytics, privacy controls, and large-scale admin tooling, but it can outperform them on local customization and Zimbabwe-specific channel design if implemented well.
+- Compared with Ivy.ai-style deployments, this project is behind in published accessibility, uptime, support, and operational governance.
+- Compared with Mainstay-style student-success bots, this project is behind in proactive messaging. It answers questions, but it does not yet drive outcomes through reminders, nudges, and follow-up campaigns.
+
+## Additional Improvements From Benchmarking
+
+1. Build a real student-service layer behind the chatbot.
+   Connect verified flows for fee balances, application status, transcript receipt, portal support, and exam-result availability to live institutional systems rather than mock data.
+
+2. Add confidence-based answer handling.
+   Introduce high-confidence, low-confidence, and no-confidence response modes so the bot can answer, show source links, or escalate cleanly instead of guessing.
+
+3. Add human handoff and office routing.
+   Let the bot transfer difficult cases to Admissions, ICT, Examinations, Student Affairs, or Accounts through email, WhatsApp escalation, or live chat windows.
+
+4. Turn the chatbot into an AI search layer for the website.
+   Index the public website, notices, brochures, calendars, portal manual, code of conduct, and division pages so users can search and chat against the same official content.
+
+5. Add continuous content sync from Kwekwe's official website.
+   The bot should automatically refresh from current notices such as fees, intake dates, academic calendar updates, vacancies, and HEXCO announcements.
+
+6. Add multilingual support.
+   Start with English, then add Shona and Ndebele for common student-service journeys, especially admissions, payments, accommodation, and portal help.
+
+7. Add proactive WhatsApp and SMS campaigns.
+   Use the bot for reminders about application deadlines, registration windows, fee deadlines, result-collection notices, orientation dates, and portal setup steps.
+
+8. Add response feedback loops.
+   Include thumbs up/down, issue reporting, and an admin queue for improving weak answers and uncovering missing knowledge.
+
+9. Add a content-governance workflow.
+   Assign content owners by office so Admissions owns intake content, Accounts owns fees, ICT owns portal instructions, and Examinations owns HEXCO/result notices.
+
+10. Add stronger analytics.
+    Track top intents, failed queries, abandonment, conversion to application, portal-support deflection, busiest hours, WhatsApp vs web usage, and office-routing trends.
+
+11. Add accessibility targets.
+    Aim for WCAG 2.1 AA on the widget, keyboard navigation, screen-reader labels, high-contrast mode, and readable mobile layouts.
+
+12. Add privacy, consent, and security controls.
+    Student-specific answers should require verification, sensitive data should not be exposed in anonymous chat, and every personal-data flow should be logged and policy-backed.
+
+13. Add Kwekwe-specific journeys, not just generic FAQ.
+    Create guided flows for `Apply Now`, `January/August intake`, `fees in USD/ZiG`, `banking and mobile money`, `student portal login`, `off-campus accommodation`, `ICT support`, and `HEXCO results collection`.
+
+14. Add a staff-facing admin console.
+    Staff should be able to upload new PDFs, approve answers, inspect failed questions, trigger re-indexing, and publish urgent notices without code changes.
+
+15. Add low-bandwidth and mobile-first optimization.
+    Keep WhatsApp as a first-class channel, reduce heavy frontend assets, support flaky connections, and optimize for the phone-first experience most students will likely use.
+
+16. Add application-conversion features.
+    Capture interest in programs, route users to the correct application page, and save high-intent leads for follow-up by Admissions.
+
+17. Add student-life and welfare coverage.
+    Expand the knowledge base to include accommodation, counseling, disability support, SRC information, campus life, transport, and health/inclusivity services.
+
+18. Add a formal operating model.
+    Define who reviews content, how often data is refreshed, what the fallback path is, what the uptime target is, and how incidents are handled.
+
 ## Recommended Delivery Sequence
 
 1. Finish replacing mock service tools with real backend integrations.

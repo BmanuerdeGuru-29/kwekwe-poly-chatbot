@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from backend.config.settings import settings
 from backend.utils.logger import logger
 from backend.api.chat import router as chat_router
+from backend.api.admin import router as admin_router
 from backend.api.webhooks.whatsapp import router as whatsapp_router
 from backend.core.document_ingestion import document_ingestion
 from backend.core.rag_engine import rag_engine
@@ -57,9 +58,10 @@ app = FastAPI(
 )
 
 # Add middleware
+allowed_origins = [origin.strip() for origin in settings.ALLOWED_ORIGINS.split(",") if origin.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=allowed_origins or ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,6 +71,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Include routers
 app.include_router(chat_router, prefix=settings.API_V1_STR)
+app.include_router(admin_router, prefix=settings.API_V1_STR)
 app.include_router(whatsapp_router, prefix=settings.API_V1_STR)
 
 

@@ -51,6 +51,28 @@ class DocumentIngestion:
         except Exception as e:
             logger.error(f"Error ingesting directory: {str(e)}")
             return False
+
+    async def ingest_file(self, file_path: str) -> bool:
+        """Ingest a single file into the vector store."""
+        try:
+            path = Path(file_path)
+            if not path.exists() or not path.is_file():
+                logger.error(f"File {file_path} does not exist")
+                return False
+
+            if path.suffix.lower() not in self.supported_formats:
+                logger.error(f"Unsupported file type for {file_path}")
+                return False
+
+            content = await self._extract_text(path)
+            if not content:
+                return False
+
+            documents = self._build_documents(path, content)
+            return vector_store.add_documents(documents)
+        except Exception as e:
+            logger.error(f"Error ingesting file {file_path}: {str(e)}")
+            return False
     
     async def _extract_text(self, file_path: Path) -> Optional[str]:
         """Extract text from different file formats"""
