@@ -1,10 +1,11 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from pathlib import Path
 
 from backend.config.settings import settings
 from backend.utils.logger import logger
@@ -14,6 +15,27 @@ from backend.api.webhooks.whatsapp import router as whatsapp_router
 from backend.core.document_ingestion import document_ingestion
 from backend.core.rag_engine import rag_engine
 from backend.services.session_manager import session_manager
+
+APP_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = APP_DIR / "frontend"
+ASSET_PATHS = {
+    "index.html": FRONTEND_DIR / "index.html",
+    "admin.html": FRONTEND_DIR / "admin.html",
+    "embed.js": FRONTEND_DIR / "embed.js",
+    "logo.png": FRONTEND_DIR / "logo.png",
+    "kwekwe-chat-widget.js": APP_DIR / "kwekwe-chat-widget.js",
+    "kwekwe-chat-widget.css": APP_DIR / "kwekwe-chat-widget.css",
+    "kwekwe-chat-widget-professional.css": APP_DIR / "kwekwe-chat-widget-professional.css",
+    "kwekwe-demo.html": APP_DIR / "kwekwe-demo.html",
+}
+
+
+def _serve_repo_asset(asset_name: str) -> FileResponse:
+    """Serve a known static asset directly from the repository."""
+    file_path = ASSET_PATHS.get(asset_name)
+    if not file_path or not file_path.exists():
+        raise HTTPException(status_code=404, detail=f"Repository asset not found: {asset_name}")
+    return FileResponse(file_path)
 
 
 @asynccontextmanager
@@ -91,6 +113,60 @@ async def root():
             "health": "/api/v1/chat/health"
         }
     }
+
+
+@app.get("/index.html", include_in_schema=False)
+async def landing_page():
+    """Serve the public landing page from the backend host."""
+    return _serve_repo_asset("index.html")
+
+
+@app.get("/admin.html", include_in_schema=False)
+async def admin_page():
+    """Serve the admin panel from the backend host."""
+    return _serve_repo_asset("admin.html")
+
+
+@app.get("/admin", include_in_schema=False)
+async def admin_redirect():
+    """Redirect a cleaner admin URL to the static admin page."""
+    return RedirectResponse(url="/admin.html", status_code=307)
+
+
+@app.get("/logo.png", include_in_schema=False)
+async def logo_file():
+    """Serve the shared logo asset used by the frontend pages."""
+    return _serve_repo_asset("logo.png")
+
+
+@app.get("/embed.js", include_in_schema=False)
+async def embed_script():
+    """Serve the one-line loader used to embed the floating widget."""
+    return _serve_repo_asset("embed.js")
+
+
+@app.get("/kwekwe-chat-widget.js", include_in_schema=False)
+async def widget_script():
+    """Serve the floating widget JavaScript bundle."""
+    return _serve_repo_asset("kwekwe-chat-widget.js")
+
+
+@app.get("/kwekwe-chat-widget.css", include_in_schema=False)
+async def widget_styles():
+    """Serve the floating widget stylesheet."""
+    return _serve_repo_asset("kwekwe-chat-widget.css")
+
+
+@app.get("/kwekwe-chat-widget-professional.css", include_in_schema=False)
+async def widget_compat_styles():
+    """Serve compatibility overrides for older widget integrations."""
+    return _serve_repo_asset("kwekwe-chat-widget-professional.css")
+
+
+@app.get("/kwekwe-demo.html", include_in_schema=False)
+async def widget_demo_page():
+    """Serve a local demo page for the floating website widget."""
+    return _serve_repo_asset("kwekwe-demo.html")
 
 
 @app.get("/health")

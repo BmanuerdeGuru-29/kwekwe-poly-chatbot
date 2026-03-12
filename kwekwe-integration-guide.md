@@ -1,218 +1,104 @@
-# Kwekwe Polytechnic Chat Widget Integration Guide
+# Kwekwe Polytechnic Floating Widget Integration
 
 ## Overview
-This guide will help you integrate the Kwekwe Polytechnic chat widget into your existing website. The widget is a standalone, self-contained component that can be easily added to any web page.
 
-## Files Required
-1. `kwekwe-chat-widget.css` - Styles for the chat widget
-2. `kwekwe-chat-widget.js` - JavaScript functionality
-3. Font Awesome (automatically loaded by the widget)
+This widget is designed to mirror the compact floating assistant pattern already visible on the Kwekwe Polytechnic ICT page:
 
-## Quick Integration (5 minutes)
+- floating launcher in the bottom-right corner
+- teaser prompt that says "Try our new chatbot!"
+- official assistant header with Kwekwe Polytechnic branding
+- quick actions for `Fees`, `Courses`, `Staff`, and `Apply`
+- same navy, gold, and cream palette used across the Kwekwe Polytechnic web presence
 
-### Step 1: Add CSS to Your Website
-Add this CSS link to the `<head>` section of your HTML pages:
+## Best Integration Method
 
-```html
-<link rel="stylesheet" href="path/to/kwekwe-chat-widget.css">
-```
-
-### Step 2: Add JavaScript to Your Website
-Add this script before the closing `</body>` tag:
+Add one script tag to the shared website footer, template, or include file that is loaded by every page.
 
 ```html
-<script src="path/to/kwekwe-chat-widget.js"></script>
+<script
+  src="https://your-chatbot-host/embed.js"
+  data-api-url="https://your-chatbot-host"
+  data-kwekwe-widget
+  defer
+></script>
 ```
 
-### Step 3: Done!
-The chat widget will automatically appear on your website with a floating chat button in the bottom-right corner.
+If the chatbot backend is running on the same host as the script, that single line is enough.
 
-## Advanced Configuration
-
-### Custom API Endpoint
-If your chatbot API is hosted at a different URL, you can update it:
-
-```javascript
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for widget to initialize
-    setTimeout(() => {
-        if (window.kwekweChatWidget) {
-            window.kwekweChatWidget.setApiBaseUrl('https://your-api-domain.com');
-        }
-    }, 100);
-});
-</script>
-```
-
-### Custom Styling
-You can override the default styles by adding your own CSS:
-
-```css
-/* Custom chat button color */
-.kwekwe-chat-button {
-    background: linear-gradient(45deg, #your-color-1, #your-color-2) !important;
-}
-
-/* Custom chat container size */
-.kwekwe-chat-container {
-    width: 400px !important;
-    height: 600px !important;
-}
-
-/* Custom positioning */
-.kwekwe-chat-button,
-.kwekwe-chat-container {
-    bottom: 40px !important;
-    right: 40px !important;
-}
-```
-
-## WordPress Integration
-
-### Method 1: Using Theme Customizer
-1. Go to Appearance → Theme Customizer → Additional CSS
-2. Paste the CSS content from `kwekwe-chat-widget.css`
-3. Go to Appearance → Theme Editor → footer.php
-4. Add the script before `</body>`:
-```html
-<script src="https://your-domain.com/kwekwe-chat-widget.js"></script>
-```
-
-### Method 2: Using Plugin
-1. Install a custom CSS/JS plugin like "Simple Custom CSS and JS"
-2. Create a new CSS custom code and paste the CSS content
-3. Create a new HTML custom code and paste:
-```html
-<script src="https://your-domain.com/kwekwe-chat-widget.js"></script>
-```
-
-## Static HTML Website Integration
-
-### Step 1: Upload Files
-Upload `kwekwe-chat-widget.css` and `kwekwe-chat-widget.js` to your website's assets folder.
-
-### Step 2: Update HTML Template
-Add to your HTML template:
+## Local Example
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-    <!-- Your existing head content -->
-    <link rel="stylesheet" href="assets/kwekwe-chat-widget.css">
-</head>
-<body>
-    <!-- Your existing body content -->
-    
-    <script src="assets/kwekwe-chat-widget.js"></script>
-</body>
-</html>
+<script
+  src="http://localhost:8000/embed.js"
+  data-api-url="http://localhost:8000"
+  data-kwekwe-widget
+  defer
+></script>
 ```
 
-## Content Management System (CMS) Integration
+## What the Loader Does
 
-### General Steps:
-1. Upload the CSS and JS files to your CMS media library
-2. Add CSS link to your site's header template
-3. Add JS script to your site's footer template
-4. Clear cache and test
+`embed.js` automatically loads:
 
-### Example for Different CMS:
+- `kwekwe-chat-widget.css`
+- `kwekwe-chat-widget.js`
 
-**Joomla:**
-- CSS: Extensions → Templates → Your Template → Add CSS
-- JS: Extensions → Templates → Your Template → Add JavaScript
+You do not need to add separate CSS or JavaScript includes when using the embed loader.
 
-**Drupal:**
-- CSS: Appearance → Settings → Your Theme → Additional CSS
-- JS: Create a custom block with JavaScript and add to footer region
+## Website-Wide Placement
 
-**Shopify:**
-- CSS: Online Store → Themes → Customize → Theme settings → Custom CSS
-- JS: Online Store → Themes → Edit code → theme.liquid (add before </body>)
+To make the widget appear on every page, place the script in one shared layout file.
 
-## Hosting Requirements
+Common examples:
 
-### For the Widget Files:
-- Any web server that can serve static files
-- HTTPS recommended for production
-- No server-side processing required
+- PHP website: shared `footer.php`, `layout.php`, or reusable include
+- WordPress: global footer or theme template
+- plain HTML site: common page template before `</body>`
 
-### For the Chat API:
-- The chatbot backend (main-simple.py) needs to be hosted
-- Recommended: PythonAnywhere, Heroku, AWS, or similar
-- API endpoint must be accessible from your website
+## Asset Endpoints
 
-## Testing Checklist
+When served through the chatbot backend, these routes are available:
 
-Before going live, test:
-- [ ] Chat button appears and is clickable
-- [ ] Chat window opens and closes properly
-- [ ] Messages can be sent and received
-- [ ] Typing indicator works
-- [ ] Responsive design on mobile devices
-- [ ] No JavaScript errors in browser console
-- [ ] API connectivity is working
+- `/embed.js`
+- `/kwekwe-chat-widget.js`
+- `/kwekwe-chat-widget.css`
+- `/logo.png`
 
-## Troubleshooting
+## Optional Customization
 
-### Chat Button Not Showing
-- Check if CSS file is loading correctly
-- Verify JavaScript file is included
-- Check browser console for errors
+You can override default labels with data attributes:
 
-### Messages Not Sending
-- Verify API endpoint is accessible
-- Check CORS settings on your API server
-- Ensure API is running and responding
-
-### Styling Issues
-- Check for CSS conflicts with existing styles
-- Use browser developer tools to inspect elements
-- Add `!important` to override conflicting styles
-
-### Mobile Issues
-- Test on actual mobile devices
-- Check responsive breakpoints in CSS
-- Ensure touch events work properly
-
-## Production Deployment
-
-### 1. Update API URL
-Change the API URL in the JavaScript file to your production endpoint:
-```javascript
-this.apiBaseUrl = 'https://your-production-api.com';
+```html
+<script
+  src="https://your-chatbot-host/embed.js"
+  data-api-url="https://your-chatbot-host"
+  data-launcher-label="Try our new chatbot!"
+  data-title="Kwekwe Poly AI"
+  data-subtitle="Official Assistant"
+  data-greeting="Hi, I am Kwekwe Polytechnic's AI assistant. Ask me about fees, courses, staff contacts, applications, accommodation, or student support."
+  data-footer-text="Kwekwe Polytechnic Official AI Assistant"
+  data-kwekwe-widget
+  defer
+></script>
 ```
 
-### 2. Enable HTTPS
-Both your website and API should use HTTPS for security.
+## Expected Backend API
 
-### 3. Optimize Performance
-- Minify CSS and JS files
-- Enable gzip compression
-- Use CDN for faster delivery
+The widget sends chat requests to:
 
-### 4. Monitor and Maintain
-- Monitor API performance
-- Check error logs regularly
-- Update content as needed
+- `/api/v1/chat/query`
 
-## Support
+It expects the chatbot backend to be reachable at the `data-api-url` you provide.
 
-For technical support:
-1. Check this guide first
-2. Test in a clean environment
-3. Check browser console for errors
-4. Verify API connectivity
+## Deployment Checklist
 
-## Security Notes
+- serve the chatbot backend over HTTPS in production
+- add the embed script once in the site-wide template
+- verify the widget opens on desktop and mobile
+- confirm the launcher appears on every page
+- test the quick chips: `Fees`, `Courses`, `Staff`, and `Apply`
+- verify the chatbot can reach the live `/api/v1/chat/query` endpoint
 
-- The widget communicates with your API via HTTPS
-- User messages are processed server-side
-- No sensitive data is stored in the browser
-- Regular security updates recommended
+## Demo Page
 
----
-
-**The chat widget is now ready to be integrated into your Kwekwe Polytechnic website!**
+Use [kwekwe-demo.html](/Users/honor/Documents/GitHub/kwekwe-poly%20chatbot/kwekwe-demo.html) to preview the widget locally.

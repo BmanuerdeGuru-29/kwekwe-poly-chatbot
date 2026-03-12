@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     # Vector Database
     CHROMA_DB_PATH: str = "./data/vector_store"
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+    EMBEDDING_CACHE_DIR: Optional[str] = None
+    EMBEDDING_DOWNLOAD_ON_MISS: bool = False
     UPLOAD_DIR: str = "./data/uploads"
     FEEDBACK_FILE: str = "./data/feedback/feedback.jsonl"
     ANALYTICS_FILE: str = "./data/analytics/chat_events.jsonl"

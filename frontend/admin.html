@@ -4,14 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kwekwe Polytechnic Admin Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{--green:#006633;--green2:#004c26;--navy:#15314b;--muted:#5d6a74;--bg:#f7f4ea;--panel:rgba(255,255,255,.94);--border:rgba(20,33,43,.12)}
-    *{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Trebuchet MS",sans-serif;background:linear-gradient(180deg,#f8faf7 0%,var(--bg) 100%);color:#14212b}
-    .shell{max-width:1120px;margin:0 auto;padding:24px}.top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:24px}.brand{display:flex;align-items:center;gap:14px}.brand img{width:64px;height:64px;border-radius:50%;background:#fff}.brand h1{margin:0;color:var(--green2)}.brand p{margin:6px 0 0;color:var(--muted)}
+    :root{--brand-navy:#1a2161;--brand-navy-deep:#0f1544;--brand-royal:#3744b5;--brand-gold:#f4a01b;--muted:#5a6579;--bg:#f7f0e2;--panel:rgba(255,255,255,.94);--border:rgba(26,33,97,.12)}
+    *{box-sizing:border-box}body{margin:0;font-family:"Poppins","Segoe UI",sans-serif;background:radial-gradient(circle at top left,rgba(244,160,27,.18),transparent 24%),linear-gradient(180deg,#fbf8f1 0%,var(--bg) 100%);color:#18233d}
+    .shell{max-width:1120px;margin:0 auto;padding:24px}.top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:24px}.brand{display:flex;align-items:center;gap:14px}.brand img{width:72px;height:72px;border-radius:22px;background:#fff;padding:6px;border:1px solid rgba(26,33,97,.12);box-shadow:0 10px 22px rgba(15,21,68,.12)}.brand h1{margin:0;color:var(--brand-navy)}.brand p{margin:6px 0 0;color:var(--muted)}
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:24px;box-shadow:0 20px 45px rgba(21,49,75,.1);margin-bottom:24px}
     .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.field,input,textarea{width:100%;padding:14px 16px;border:1px solid rgba(21,49,75,.16);border-radius:16px;background:#fff;font:inherit}textarea{min-height:120px;resize:vertical}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:999px;border:1px solid transparent;cursor:pointer;font:inherit}.primary{background:linear-gradient(135deg,var(--green) 0%,#0b7a41 100%);color:#fff}.secondary{background:#fff;border-color:rgba(21,49,75,.14);color:var(--navy)}
-    h2,h3{color:var(--navy)}pre{background:#0f1f2e;color:#e7edf2;padding:16px;border-radius:18px;overflow:auto;white-space:pre-wrap}.feedback-item{padding:14px;border-radius:16px;background:#fff;border:1px solid rgba(21,49,75,.1);margin-top:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:999px;border:1px solid transparent;cursor:pointer;font:inherit}.primary{background:linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-royal) 100%);color:#fff}.secondary{background:#fff;border-color:rgba(21,49,75,.14);color:var(--brand-navy)}
+    h2,h3{color:var(--brand-navy)}pre{background:#0f1f2e;color:#e7edf2;padding:16px;border-radius:18px;overflow:auto;white-space:pre-wrap}.feedback-item{padding:14px;border-radius:16px;background:#fff;border:1px solid rgba(21,49,75,.1);margin-top:12px}
     @media (max-width:900px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
@@ -19,7 +22,7 @@
   <div class="shell">
     <header class="top">
       <div class="brand">
-        <img src="./logo.png" alt="Kwekwe Polytechnic logo">
+        <img src="./logo.png" alt="Kwekwe Polytechnic logo" onerror="this.onerror=null;this.src='https://apply.kwekwepoly.ac.zw/static/images/logo1.png';">
         <div>
           <h1>Kwekwe Polytechnic Admin Console</h1>
           <p>Knowledge refresh, analytics, and feedback review</p>

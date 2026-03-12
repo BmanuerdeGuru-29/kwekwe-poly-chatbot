@@ -3,11 +3,15 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from fastapi.responses import FileResponse, RedirectResponse
+from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 from datetime import datetime
-import os
+from pathlib import Path
+
+from backend.api.admin import router as admin_router
+from backend.config.settings import settings
+from backend.services.analytics_store import analytics_store
 
 # Simple mock data for demonstration
 MOCK_KNOWLEDGE_BASE = {
@@ -96,6 +100,26 @@ app = FastAPI(
     version="1.0.0"
 )
 
+APP_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = APP_DIR / "frontend"
+ASSET_PATHS = {
+    "index.html": FRONTEND_DIR / "index.html",
+    "admin.html": FRONTEND_DIR / "admin.html",
+    "embed.js": FRONTEND_DIR / "embed.js",
+    "logo.png": FRONTEND_DIR / "logo.png",
+    "kwekwe-chat-widget.js": APP_DIR / "kwekwe-chat-widget.js",
+    "kwekwe-chat-widget.css": APP_DIR / "kwekwe-chat-widget.css",
+    "kwekwe-chat-widget-professional.css": APP_DIR / "kwekwe-chat-widget-professional.css",
+    "kwekwe-demo.html": APP_DIR / "kwekwe-demo.html",
+}
+
+
+def serve_repo_asset(asset_name: str) -> FileResponse:
+    file_path = ASSET_PATHS.get(asset_name)
+    if not file_path or not file_path.exists():
+        raise HTTPException(status_code=404, detail=f"Repository asset not found: {asset_name}")
+    return FileResponse(file_path)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -105,18 +129,67 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(admin_router, prefix=settings.API_V1_STR)
+
 # Mount static files from frontend directory
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 # Serve the main index.html at the root
 @app.get("/")
 async def read_index():
-    return FileResponse('frontend/index.html')
+    return serve_repo_asset("index.html")
+
+
+@app.get("/index.html")
+async def read_index_html():
+    return serve_repo_asset("index.html")
+
+
+@app.get("/admin.html")
+async def read_admin():
+    return serve_repo_asset("admin.html")
+
+
+@app.get("/admin")
+async def read_admin_redirect():
+    return RedirectResponse(url="/admin.html", status_code=307)
+
+
+@app.get("/logo.png")
+async def read_logo():
+    return serve_repo_asset("logo.png")
+
+
+@app.get("/embed.js")
+async def read_embed():
+    return serve_repo_asset("embed.js")
+
+
+@app.get("/kwekwe-chat-widget.js")
+async def read_widget_js():
+    return serve_repo_asset("kwekwe-chat-widget.js")
+
+
+@app.get("/kwekwe-chat-widget.css")
+async def read_widget_css():
+    return serve_repo_asset("kwekwe-chat-widget.css")
+
+
+@app.get("/kwekwe-chat-widget-professional.css")
+async def read_widget_professional_css():
+    return serve_repo_asset("kwekwe-chat-widget-professional.css")
+
+
+@app.get("/kwekwe-demo.html")
+async def read_widget_demo():
+    return serve_repo_asset("kwekwe-demo.html")
 
 class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = None
     use_tools: Optional[bool] = False
+    context: Optional[Dict[str, Any]] = None
+    language: Optional[str] = "en"
 
 class ChatResponse(BaseModel):
     response: str
@@ -124,6 +197,19 @@ class ChatResponse(BaseModel):
     sources: Optional[List[Dict[str, Any]]] = []
     timestamp: str
     query_type: str = "simple"
+
+
+class SearchRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=500)
+    limit: int = Field(default=5, ge=1, le=10)
+
+
+class FeedbackRequest(BaseModel):
+    session_id: str
+    message_content: str
+    helpful: bool
+    comment: Optional[str] = Field(default=None, max_length=500)
+    intent: Optional[str] = None
 
 def get_simple_response(message: str) -> str:
     """Get simple response based on keywords"""
@@ -314,6 +400,49 @@ def get_simple_response(message: str) -> str:
     else:
         return "I can help you with information about Kwekwe Polytechnic's programs including Engineering, Commerce, Applied Sciences, B-Tech, and A.C.E programs. I can also provide information about fees, admission requirements, contact details, HEXCO results, and January 2026 intake. Please ask me about any of these topics."
 
+
+def get_simple_search_results(query: str, limit: int = 5) -> List[Dict[str, Any]]:
+    """Search the demo knowledge base with basic keyword matching."""
+    query_terms = [term for term in query.lower().split() if term]
+    results: List[Dict[str, Any]] = []
+
+    for key, content in MOCK_KNOWLEDGE_BASE.items():
+        lowered = content.lower()
+        score = sum(lowered.count(term) for term in query_terms)
+        if score <= 0 and query_terms:
+            continue
+
+        title = key.replace("_", " ").title()
+        snippet = " ".join(content.split())[:240]
+        results.append(
+            {
+                "title": f"Kwekwe Polytechnic - {title}",
+                "snippet": f"{snippet}..." if len(snippet) >= 240 else snippet,
+                "category": key.split("_")[0],
+                "source_url": None,
+                "similarity_score": min(0.99, 0.45 + (score * 0.08)) if score else 0.4,
+            }
+        )
+
+    if not results and query_terms:
+        return []
+
+    ordered = sorted(results, key=lambda item: item["similarity_score"], reverse=True)
+    return ordered[:limit]
+
+
+def build_chat_response(request: ChatRequest) -> ChatResponse:
+    response_text = get_simple_response(request.message)
+    session_id = request.session_id or f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+    return ChatResponse(
+        response=response_text,
+        session_id=session_id,
+        sources=[],
+        timestamp=datetime.now().isoformat(),
+        query_type="simple"
+    )
+
 @app.get("/api")
 async def api_info():
     """API information endpoint"""
@@ -332,21 +461,47 @@ async def api_info():
 async def chat_query(request: ChatRequest):
     """Main chat endpoint"""
     try:
-        # Generate simple response
-        response_text = get_simple_response(request.message)
-        
-        # Generate session ID if not provided
-        session_id = request.session_id or f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        return ChatResponse(
-            response=response_text,
-            session_id=session_id,
-            timestamp=datetime.now().isoformat(),
-            query_type="simple"
-        )
-        
+        return build_chat_response(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@app.post("/api/v1/chat/query")
+async def chat_query_v1(request: ChatRequest):
+    """Frontend-compatible chat endpoint."""
+    try:
+        return build_chat_response(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@app.post("/api/v1/chat/search")
+async def search_v1(request: SearchRequest):
+    """Frontend-compatible search endpoint."""
+    try:
+        results = get_simple_search_results(request.query, request.limit)
+        return {"results": results, "count": len(results)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+
+@app.post("/api/v1/chat/feedback")
+async def feedback_v1(request: FeedbackRequest):
+    """Frontend-compatible feedback capture."""
+    try:
+        await analytics_store.record_feedback(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "session_id": request.session_id,
+                "message_content": request.message_content,
+                "helpful": request.helpful,
+                "comment": request.comment,
+                "intent": request.intent,
+            }
+        )
+        return {"status": "received"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Feedback failed: {str(e)}")
 
 @app.get("/health")
 async def health_check():
@@ -357,6 +512,12 @@ async def health_check():
         "version": "1.0.0",
         "environment": "development"
     }
+
+
+@app.get("/api/v1/chat/health")
+async def health_check_v1():
+    """Frontend-compatible health endpoint."""
+    return await health_check()
 
 if __name__ == "__main__":
     uvicorn.run(

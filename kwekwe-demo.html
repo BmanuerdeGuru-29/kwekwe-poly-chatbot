@@ -3,165 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kwekwe Polytechnic - Demo Page</title>
+    <title>Kwekwe Polytechnic Widget Demo</title>
     <style>
+        :root {
+            --navy: #1a2161;
+            --royal: #3744b5;
+            --gold: #f4a01b;
+            --cream: #fbf5e9;
+            --ink: #1d2743;
+            --muted: #667085;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f5f5f5;
-            line-height: 1.6;
+            font-family: "Poppins", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(244, 160, 27, 0.18), transparent 25%),
+                linear-gradient(180deg, #fffdf8 0%, var(--cream) 100%);
         }
-        .container {
-            max-width: 1200px;
+
+        .page {
+            max-width: 1120px;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px 20px 80px;
         }
-        h1 {
-            color: #1e3a8a;
-            text-align: center;
-            margin-bottom: 30px;
+
+        .hero,
+        .section {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(26, 33, 97, 0.12);
+            border-radius: 28px;
+            box-shadow: 0 22px 56px rgba(15, 21, 68, 0.12);
         }
-        .demo-section {
-            margin-bottom: 40px;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+
+        .hero {
+            padding: 40px;
+            margin-bottom: 24px;
         }
-        .demo-section h2 {
-            color: #7c3aed;
+
+        .hero h1,
+        .section h2 {
             margin-top: 0;
+            color: var(--navy);
         }
-        .feature-list {
-            list-style-type: none;
-            padding: 0;
+
+        .hero p,
+        .section p,
+        .section li {
+            color: var(--muted);
+            line-height: 1.7;
         }
-        .feature-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
+
+        .section {
+            padding: 28px;
+            margin-bottom: 20px;
         }
-        .feature-list li:before {
-            content: "✓ ";
-            color: #1e3a8a;
-            font-weight: bold;
-        }
-        .integration-code {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 4px;
-            padding: 15px;
-            font-family: monospace;
-            font-size: 14px;
+
+        .code {
+            padding: 16px;
+            border-radius: 18px;
+            background: #10173f;
+            color: #f8f9ff;
             overflow-x: auto;
+            font-family: Consolas, monospace;
         }
-        .note {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 4px;
-            padding: 15px;
-            margin: 20px 0;
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .note:before {
-            content: "ℹ️ ";
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 12px;
+            border-radius: 999px;
+            background: rgba(244, 160, 27, 0.12);
+            color: var(--navy);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Kwekwe Polytechnic Website Integration Demo</h1>
-        
-        <div class="demo-section">
-            <h2>Welcome to Kwekwe Polytechnic</h2>
-            <p>This is a demonstration page showing how the chat widget integrates with the Kwekwe Polytechnic website. The chat widget appears as a floating button in the bottom-right corner of this page.</p>
-            
-            <p><strong>To test the chat widget:</strong></p>
-            <ol>
-                <li>Look for the floating chat button in the bottom-right corner</li>
-                <li>Click the button to open the chat window</li>
-                <li>Try asking questions about Kwekwe Polytechnic programs, fees, or services</li>
-                <li>The chat assistant will provide helpful information</li>
-            </ol>
-        </div>
-
-        <div class="demo-section">
-            <h2>Chat Widget Features</h2>
-            <ul class="feature-list">
-                <li>Floating chat button with 3D animations</li>
-                <li>Professional Kwekwe Polytechnic branding</li>
-                <li>Real-time chat with AI assistant</li>
-                <li>Knowledge about all programs and services</li>
-                <li>Mobile-responsive design</li>
-                <li>Typing indicators and smooth animations</li>
-                <li>Quick suggestion chips for common questions</li>
-                <li>Contact information and payment details</li>
-            </ul>
-        </div>
-
-        <div class="demo-section">
-            <h2>Integration Information</h2>
-            <p>The chat widget can be easily integrated into any website with just two lines of code:</p>
-            
-            <h3>CSS (add to head):</h3>
-            <div class="integration-code">
-&lt;link rel="stylesheet" href="kwekwe-chat-widget.css"&gt;
+    <main class="page">
+        <section class="hero">
+            <h1>Kwekwe Polytechnic Floating Widget Demo</h1>
+            <p>
+                This page previews the floating assistant widget designed to mirror the
+                compact "Try our new chatbot!" experience on the Kwekwe Polytechnic site.
+                Use the launcher at the bottom-right to test the same quick-entry flow.
+            </p>
+            <div class="chips">
+                <span class="chip">Launcher teaser</span>
+                <span class="chip">Official assistant header</span>
+                <span class="chip">Fees / Courses / Staff / Apply chips</span>
+                <span class="chip">Website-matched navy and gold theme</span>
             </div>
-            
-            <h3>JavaScript (add before closing body tag):</h3>
-            <div class="integration-code">
-&lt;script src="kwekwe-chat-widget.js"&gt;&lt;/script&gt;
-            </div>
-            
-            <div class="note">
-                <strong>Note:</strong> The widget automatically loads Font Awesome icons and initializes itself when the page loads. No additional configuration is required.
-            </div>
-        </div>
+        </section>
 
-        <div class="demo-section">
-            <h2>Sample Content</h2>
-            <p>This section demonstrates how the chat widget works alongside regular website content. Students and visitors can browse the website while having instant access to the AI assistant.</p>
-            
-            <h3>Engineering Programs</h3>
-            <p>Our Engineering Division offers programs in Automotive, Mechanical, Electrical, and Civil Engineering with experienced faculty and modern facilities.</p>
-            
-            <h3>Commerce Programs</h3>
-            <p>The Commerce Division provides Management and Business Studies programs designed for today's competitive business environment.</p>
-            
-            <h3>Applied Sciences</h3>
-            <p>Our Applied Sciences Division includes Information Technology, Biological Sciences, and Physical Sciences departments.</p>
-            
-            <p><strong>Have questions?</strong> Click the chat button in the bottom-right corner to get instant answers from our AI assistant!</p>
-        </div>
+        <section class="section">
+            <h2>One-Line Website Include</h2>
+            <p>
+                Add this script once in the shared footer or common template used by every page.
+                The loader injects the widget CSS and JavaScript automatically.
+            </p>
+            <div class="code">&lt;script src="http://localhost:8000/embed.js" data-api-url="http://localhost:8000" data-kwekwe-widget defer&gt;&lt;/script&gt;</div>
+        </section>
 
-        <div class="demo-section">
-            <h2>Technical Requirements</h2>
-            <ul class="feature-list">
-                <li>No dependencies on frontend frameworks</li>
-                <li>Works with any HTML website</li>
-                <li>Compatible with WordPress, Joomla, Drupal, and other CMS</li>
-                <li>Mobile-responsive design</li>
-                <li>Cross-browser compatible</li>
-                <li>HTTPS ready for production</li>
-            </ul>
-        </div>
+        <section class="section">
+            <h2>Integration Notes</h2>
+            <p>
+                The widget is designed for PHP-based pages and other static templates. Add the
+                script include to the global footer, layout, or reusable include file to make it
+                appear on every page automatically.
+            </p>
+        </section>
+    </main>
 
-        <div class="demo-section">
-            <h2>Support and Documentation</h2>
-            <p>For detailed integration instructions and troubleshooting, please refer to the integration guide included with the widget files.</p>
-            
-            <p><strong>Contact Information:</strong></p>
-            <ul>
-                <li>Phone: +263 8612 122991</li>
-                <li>Email: infor@kwekwepoly.ac.zw</li>
-                <li>Website: https://kwekwepoly.ac.zw</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Chat Widget Integration -->
-    <link rel="stylesheet" href="kwekwe-chat-widget.css">
-    <script src="kwekwe-chat-widget.js"></script>
+    <script src="http://localhost:8000/embed.js" data-api-url="http://localhost:8000" data-kwekwe-widget defer></script>
 </body>
 </html>
