@@ -7,9 +7,15 @@ from pydantic import BaseModel, Field
 
 from backend.config.settings import settings
 from backend.core.document_ingestion import document_ingestion
+from backend.core.rag_engine import rag_engine
 from backend.core.site_sync import website_sync_service
 from backend.core.vector_store import vector_store
 from backend.services.analytics_store import analytics_store
+from backend.services.openai_key_manager import (
+    clear_openai_api_key,
+    get_openai_key_status,
+    set_openai_api_key,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -22,6 +28,11 @@ class WebsiteSyncRequest(BaseModel):
     seeds: Optional[List[str]] = Field(default=None, description="Seed URLs")
     max_pages: int = Field(default=10, ge=1, le=100)
     max_depth: int = Field(default=1, ge=0, le=3)
+
+
+class OpenAIKeyUpdateRequest(BaseModel):
+    api_key: str = Field(..., min_length=1, description="OpenAI API key")
+    persist: bool = Field(default=True, description="Persist key to .env")
 
 
 def _authorize_admin(admin_key: Optional[str]) -> None:
@@ -39,6 +50,7 @@ async def get_admin_overview(x_admin_key: Optional[str] = Header(default=None)):
         "analytics": analytics,
         "upload_dir": settings.UPLOAD_DIR,
         "website_sync_seeds": [seed.strip() for seed in settings.WEBSITE_SYNC_SEEDS.split(",") if seed.strip()],
+        "openai": get_openai_key_status(),
     }
 
 
@@ -104,3 +116,41 @@ async def get_analytics_summary(x_admin_key: Optional[str] = Header(default=None
 async def get_feedback(limit: int = 50, x_admin_key: Optional[str] = Header(default=None)):
     _authorize_admin(x_admin_key)
     return {"feedback": await analytics_store.list_feedback(limit=limit)}
+
+
+@router.get("/openai")
+async def get_openai_settings(x_admin_key: Optional[str] = Header(default=None)):
+    _authorize_admin(x_admin_key)
+    status = get_openai_key_status()
+    status["llm_configured"] = rag_engine.llm is not None
+    return status
+
+
+@router.post("/openai")
+async def update_openai_settings(
+    request: OpenAIKeyUpdateRequest,
+    x_admin_key: Optional[str] = Header(default=None),
+):
+    _authorize_admin(x_admin_key)
+    try:
+        status = set_openai_api_key(request.api_key, persist=request.persist)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    rag_engine.refresh_configuration()
+    status["llm_configured"] = rag_engine.llm is not None
+    status["message"] = "OpenAI API key updated"
+    return status
+
+
+@router.delete("/openai")
+async def delete_openai_settings(
+    persist: bool = True,
+    x_admin_key: Optional[str] = Header(default=None),
+):
+    _authorize_admin(x_admin_key)
+    status = clear_openai_api_key(persist=persist)
+    rag_engine.refresh_configuration()
+    status["llm_configured"] = rag_engine.llm is not None
+    status["message"] = "OpenAI API key cleared"
+    return status

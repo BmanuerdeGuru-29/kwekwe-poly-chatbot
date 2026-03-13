@@ -43,6 +43,26 @@
       </div>
     </section>
 
+    <section class="panel">
+      <h2>OpenAI Key Management</h2>
+      <p>Manage the OpenAI API key used for ChatGPT fallback responses.</p>
+      <div class="row">
+        <input id="openai-key-input" class="field" type="password" placeholder="Enter or replace OpenAI API key">
+      </div>
+      <div class="row" style="margin-top:12px">
+        <label style="display:inline-flex;align-items:center;gap:8px;color:var(--muted)">
+          <input id="openai-persist" type="checkbox" checked>
+          Persist to <code>.env</code>
+        </label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="load-openai-status" class="btn secondary" type="button">Load Key Status</button>
+        <button id="save-openai-key" class="btn primary" type="button">Save OpenAI Key</button>
+        <button id="clear-openai-key" class="btn secondary" type="button">Clear OpenAI Key</button>
+      </div>
+      <pre id="openai-output">OpenAI key status not loaded yet.</pre>
+    </section>
+
     <section class="grid">
       <div class="panel">
         <h3>Website Sync</h3>
@@ -103,6 +123,7 @@ https://apply.kwekwepoly.ac.zw/</textarea>
     const KEY_STORAGE = "kwekwe_admin_api_key";
     const logOutput = document.getElementById("action-log");
     const adminKeyInput = document.getElementById("admin-key");
+    const openAiOutput = document.getElementById("openai-output");
     adminKeyInput.value = localStorage.getItem(KEY_STORAGE) || "";
 
     function getHeaders(extra = {}) {
@@ -124,6 +145,16 @@ https://apply.kwekwepoly.ac.zw/</textarea>
       return data;
     }
 
+    function renderOpenAIStatus(data) {
+      openAiOutput.textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function loadOpenAIStatus() {
+      const data = await request("/api/v1/admin/openai", { headers: getHeaders() });
+      renderOpenAIStatus(data);
+      return data;
+    }
+
     document.getElementById("save-key").addEventListener("click", () => {
       localStorage.setItem(KEY_STORAGE, adminKeyInput.value.trim());
       log("Admin key saved locally.");
@@ -133,9 +164,58 @@ https://apply.kwekwepoly.ac.zw/</textarea>
       try {
         const data = await request("/api/v1/admin/overview", { headers: getHeaders() });
         document.getElementById("analytics-output").textContent = JSON.stringify(data, null, 2);
+        if (data.openai) renderOpenAIStatus(data.openai);
         log("Loaded admin overview.", data);
       } catch (error) {
         log(`Failed to load overview: ${error.message}`);
+      }
+    });
+
+    document.getElementById("load-openai-status").addEventListener("click", async () => {
+      try {
+        const data = await loadOpenAIStatus();
+        log("OpenAI key status loaded.", data);
+      } catch (error) {
+        log(`OpenAI key status failed: ${error.message}`);
+      }
+    });
+
+    document.getElementById("save-openai-key").addEventListener("click", async () => {
+      try {
+        const apiKey = document.getElementById("openai-key-input").value.trim();
+        if (!apiKey) {
+          log("Enter an OpenAI API key before saving.");
+          return;
+        }
+        const payload = {
+          api_key: apiKey,
+          persist: document.getElementById("openai-persist").checked
+        };
+        const data = await request("/api/v1/admin/openai", {
+          method: "POST",
+          headers: getHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify(payload)
+        });
+        document.getElementById("openai-key-input").value = "";
+        renderOpenAIStatus(data);
+        log("OpenAI API key updated.", data);
+      } catch (error) {
+        log(`OpenAI key update failed: ${error.message}`);
+      }
+    });
+
+    document.getElementById("clear-openai-key").addEventListener("click", async () => {
+      try {
+        const persist = document.getElementById("openai-persist").checked;
+        const data = await request(`/api/v1/admin/openai?persist=${persist ? "true" : "false"}`, {
+          method: "DELETE",
+          headers: getHeaders()
+        });
+        document.getElementById("openai-key-input").value = "";
+        renderOpenAIStatus(data);
+        log("OpenAI API key cleared.", data);
+      } catch (error) {
+        log(`OpenAI key clear failed: ${error.message}`);
       }
     });
 
@@ -222,6 +302,8 @@ https://apply.kwekwepoly.ac.zw/</textarea>
         log(`Feedback load failed: ${error.message}`);
       }
     });
+
+    loadOpenAIStatus().catch(() => {});
   </script>
 </body>
 </html>

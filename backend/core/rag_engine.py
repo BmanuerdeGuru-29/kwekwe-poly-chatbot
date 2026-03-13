@@ -154,6 +154,13 @@ class RAGEngine:
         except Exception as e:
             logger.error(f"Error initializing RAG engine: {str(e)}")
 
+    def refresh_configuration(self):
+        """Rebuild OpenAI-dependent components after runtime configuration changes."""
+        self.llm = None
+        self.retriever = None
+        self.qa_chain = None
+        self._initialize_components()
+
     async def query(
         self,
         question: str,

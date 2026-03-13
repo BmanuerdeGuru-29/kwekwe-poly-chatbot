@@ -1,6 +1,12 @@
-from pydantic_settings import BaseSettings
 from typing import Optional, List
-import os
+
+try:
+    from pydantic_settings import BaseSettings
+except ModuleNotFoundError:
+    try:
+        from pydantic.v1 import BaseSettings
+    except ImportError:
+        from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
