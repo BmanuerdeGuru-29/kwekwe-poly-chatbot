@@ -57,8 +57,8 @@
         subtitle: script?.dataset?.subtitle || "Official Assistant",
         greeting:
           script?.dataset?.greeting ||
-          "Hi, I am Kwekwe Polytechnic's AI assistant. Ask me about fees, courses, staff contacts, applications, accommodation, or student support.",
-        footerText: script?.dataset?.footerText || "Kwekwe Polytechnic Official AI Assistant",
+          "Hello! 👋 I'm your friendly AI assistant from Kwekwe Polytechnic. I'm here to help with any questions you might have about our programs, admissions, fees, or student life. What can I help you with today?",
+        footerText: script?.dataset?.footerText || "Kwekwe Polytechnic Official AI Assistant<br>Powered by IT Unit &copy; 2025 Kwekwe Polytechnic",
         quickPrompts: DEFAULT_PROMPTS,
         ...config,
       };
@@ -208,7 +208,7 @@
       this.setTyping(true);
 
       try {
-        const response = await fetch(this.buildApiUrl("/chat/query"), {
+        const response = await fetch(this.buildApiUrl(), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -233,6 +233,9 @@
           suggestedActions: Array.isArray(data.suggested_actions) ? data.suggested_actions : [],
           handoff: data.handoff || null,
           sources: Array.isArray(data.sources) ? data.sources : [],
+          queryType: data.query_type || "local-search",
+          answerMode: data.answer_mode || "local-knowledge",
+          openai: data.openai || { used: false },
         });
       } catch (error) {
         this.pushAssistantMessage(
@@ -243,16 +246,181 @@
       }
     }
 
-    buildApiUrl(path) {
+    buildApiUrl() {
       const base = (this.config.apiBaseUrl || window.location.origin).replace(/\/$/, "");
-      if (base.endsWith("/api/v1")) {
-        return `${base}${path}`;
+      if (base.endsWith(".php")) {
+        return base;
       }
-      return `${base}/api/v1${path}`;
+      return `${base}/api/chat.php`;
+    }
+
+    isSafeHttpUrl(value) {
+      return /^https?:\/\//i.test(String(value || "").trim());
+    }
+
+    buildSafeLinkMarkup(url, label) {
+      if (!this.isSafeHttpUrl(url)) {
+        return "";
+      }
+      const safeUrl = this.escapeHtml(String(url).trim());
+      const safeLabel = this.escapeHtml(label || url);
+      return `<a href="${safeUrl}" target="_blank" rel="noreferrer">${safeLabel}</a>`;
+    }
+
+    formatInlineText(text) {
+      const placeholders = [];
+      const escaped = this.escapeHtml(text);
+      const withLinks = escaped.replace(/https?:\/\/[^\s<]+/gi, (url) => {
+        const token = `__LINK_${placeholders.length}__`;
+        placeholders.push(this.buildSafeLinkMarkup(url, url));
+        return token;
+      });
+
+      let formatted = withLinks
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/`([^`]+)`/g, "<code>$1</code>");
+
+      placeholders.forEach((markup, index) => {
+        formatted = formatted.replace(`__LINK_${index}__`, markup);
+      });
+
+      return formatted;
+    }
+
+    findNextNonEmptyLine(lines, startIndex) {
+      for (let index = startIndex; index < lines.length; index += 1) {
+        if (lines[index].trim()) {
+          return index;
+        }
+      }
+      return -1;
+    }
+
+    formatParagraphBlock(lines) {
+      if (lines.length === 1) {
+        const singleLine = lines[0];
+        const labelMatch = singleLine.match(/^([^:]{1,60}:)\s+(.+)$/);
+        if (labelMatch && !/^https?:/i.test(singleLine)) {
+          return `<p><strong>${this.formatInlineText(labelMatch[1])}</strong> ${this.formatInlineText(labelMatch[2])}</p>`;
+        }
+      }
+      return `<p>${lines.map((line) => this.formatInlineText(line)).join("<br>")}</p>`;
+    }
+
+    buildFormattedHtml(text) {
+      const normalized = String(text || "").replace(/\r\n/g, "\n").trim();
+      if (!normalized) {
+        return "";
+      }
+
+      const lines = normalized.split("\n");
+      const blocks = [];
+      let index = 0;
+
+      while (index < lines.length) {
+        const trimmed = lines[index].trim();
+        if (!trimmed) {
+          index += 1;
+          continue;
+        }
+
+        if (/^#{1,3}\s+/.test(trimmed)) {
+          blocks.push(`<p class="kwekwe-widget-formatted-heading">${this.formatInlineText(trimmed.replace(/^#{1,3}\s+/, ""))}</p>`);
+          index += 1;
+          continue;
+        }
+
+        if (/^[-*]\s+/.test(trimmed)) {
+          const items = [];
+          while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
+            items.push(lines[index].trim().replace(/^[-*]\s+/, ""));
+            index += 1;
+          }
+          blocks.push(`<ul>${items.map((item) => `<li>${this.formatInlineText(item)}</li>`).join("")}</ul>`);
+          continue;
+        }
+
+        if (/^\d+\.\s+/.test(trimmed)) {
+          const items = [];
+          while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
+            items.push(lines[index].trim().replace(/^\d+\.\s+/, ""));
+            index += 1;
+          }
+          blocks.push(`<ol>${items.map((item) => `<li>${this.formatInlineText(item)}</li>`).join("")}</ol>`);
+          continue;
+        }
+
+        const nextNonEmptyIndex = this.findNextNonEmptyLine(lines, index + 1);
+        if (
+          trimmed.endsWith(":") &&
+          nextNonEmptyIndex !== -1 &&
+          (/^[-*]\s+/.test(lines[nextNonEmptyIndex].trim()) || /^\d+\.\s+/.test(lines[nextNonEmptyIndex].trim()))
+        ) {
+          blocks.push(`<p class="kwekwe-widget-formatted-heading">${this.formatInlineText(trimmed)}</p>`);
+          index += 1;
+          continue;
+        }
+
+        const paragraphLines = [trimmed];
+        index += 1;
+
+        while (index < lines.length) {
+          const nextTrimmed = lines[index].trim();
+          if (!nextTrimmed) {
+            index += 1;
+            break;
+          }
+          if (/^[-*]\s+/.test(nextTrimmed) || /^\d+\.\s+/.test(nextTrimmed) || /^#{1,3}\s+/.test(nextTrimmed)) {
+            break;
+          }
+
+          const lookaheadIndex = this.findNextNonEmptyLine(lines, index + 1);
+          if (
+            nextTrimmed.endsWith(":") &&
+            lookaheadIndex !== -1 &&
+            (/^[-*]\s+/.test(lines[lookaheadIndex].trim()) || /^\d+\.\s+/.test(lines[lookaheadIndex].trim()))
+          ) {
+            break;
+          }
+
+          paragraphLines.push(nextTrimmed);
+          index += 1;
+        }
+
+        blocks.push(this.formatParagraphBlock(paragraphLines));
+      }
+
+      return `<div class="kwekwe-widget-formatted-content">${blocks.join("")}</div>`;
     }
 
     pushAssistantMessage(content, extras = {}) {
       this.pushMessage("assistant", content, extras);
+    }
+
+    buildAnswerBadges(message) {
+      if (message.role !== "assistant") {
+        return [];
+      }
+      if (!message.queryType && !message.answerMode && !message.handoff) {
+        return [];
+      }
+
+      const badges = [];
+      if (message.answerMode === "verified-handoff" || message.queryType === "verified-handoff") {
+        badges.push({ label: "Verified handoff", className: "handoff" });
+      } else if (message.queryType === "openai-fallback" || message.answerMode === "chatgpt-fallback") {
+        badges.push({ label: "ChatGPT fallback", className: "fallback" });
+      } else if (message.queryType === "fallback" || message.answerMode === "contacts-fallback") {
+        badges.push({ label: "Official channels", className: "fallback" });
+      } else {
+        badges.push({ label: "Local knowledge", className: "local" });
+      }
+
+      if (message.handoff && message.answerMode !== "verified-handoff" && message.queryType !== "verified-handoff") {
+        badges.push({ label: "Official follow-up", className: "handoff" });
+      }
+
+      return badges;
     }
 
     pushMessage(role, content, extras = {}) {
@@ -265,7 +433,13 @@
 
       this.messages.push(message);
       this.renderMessage(message);
-      this.scrollToBottom();
+      // Instead of always scrolling to the absolute bottom (which can hide the start of a long reply),
+      // scroll so that the newly inserted message is aligned to the top of the view. This ensures
+      // users see the beginning of the answer (e.g. bullet points) rather than just the footer.
+      const last = this.messagesEl.lastElementChild;
+      if (last) {
+        last.scrollIntoView({ block: 'start' });
+      }
     }
 
     renderMessage(message) {
@@ -279,13 +453,26 @@
         content.innerHTML = `
           <div class="kwekwe-widget-welcome">
             <span class="kwekwe-widget-welcome-kicker">Kwekwe Polytechnic</span>
-            <p>${this.escapeHtml(message.content)}</p>
+            ${this.buildFormattedHtml(message.content)}
           </div>
         `;
       } else {
-        const paragraph = document.createElement("p");
-        paragraph.textContent = message.content;
-        content.appendChild(paragraph);
+        content.innerHTML = this.buildFormattedHtml(message.content);
+      }
+
+      const badges = this.buildAnswerBadges(message);
+      if (badges.length) {
+        const meta = document.createElement("div");
+        meta.className = "kwekwe-widget-answer-meta";
+
+        badges.forEach((badge) => {
+          const pill = document.createElement("span");
+          pill.className = `kwekwe-widget-answer-pill kwekwe-widget-answer-pill-${badge.className}`;
+          pill.textContent = badge.label;
+          meta.appendChild(pill);
+        });
+
+        content.insertBefore(meta, content.firstChild);
       }
 
       if (Array.isArray(message.suggestedActions) && message.suggestedActions.length) {
@@ -315,33 +502,62 @@
       if (message.handoff) {
         const handoff = document.createElement("div");
         handoff.className = "kwekwe-widget-handoff";
-        handoff.innerHTML = `
-          <strong>${this.escapeHtml(message.handoff.office || "Official office")}</strong>
-          <span>${this.escapeHtml(message.handoff.message || "Use the official office for follow-up support.")}</span>
-        `;
-        content.appendChild(handoff);
-      }
 
-      if (Array.isArray(message.sources) && message.sources.length) {
-        const sources = document.createElement("div");
-        sources.className = "kwekwe-widget-sources";
+        const title = document.createElement("strong");
+        title.textContent = message.handoff.office || "Official office";
+        handoff.appendChild(title);
 
-        message.sources.slice(0, 2).forEach((source) => {
-          const url = source.metadata?.source_url || source.metadata?.source;
-          if (!url || !/^https?:\/\//.test(url)) {
-            return;
-          }
-          const link = document.createElement("a");
-          link.href = url;
-          link.target = "_blank";
-          link.rel = "noreferrer";
-          link.textContent = source.metadata?.filename || "Official source";
-          sources.appendChild(link);
-        });
-
-        if (sources.children.length) {
-          content.appendChild(sources);
+        if (message.handoff.status) {
+          const status = document.createElement("div");
+          status.className = "kwekwe-widget-handoff-status";
+          status.textContent = message.handoff.status;
+          handoff.appendChild(status);
         }
+
+        if (message.handoff.reason) {
+          const reason = document.createElement("p");
+          reason.className = "kwekwe-widget-handoff-reason";
+          reason.textContent = message.handoff.reason;
+          handoff.appendChild(reason);
+        }
+
+        if (message.handoff.scope) {
+          const scope = document.createElement("p");
+          scope.className = "kwekwe-widget-handoff-scope";
+          scope.textContent = `Best for: ${message.handoff.scope}`;
+          handoff.appendChild(scope);
+        }
+
+        if (message.handoff.message) {
+          const body = document.createElement("div");
+          body.innerHTML = this.buildFormattedHtml(message.handoff.message);
+          handoff.appendChild(body);
+        }
+
+        if (Array.isArray(message.handoff.channels) && message.handoff.channels.length) {
+          const channels = document.createElement("div");
+          channels.className = "kwekwe-widget-handoff-channels";
+          message.handoff.channels.forEach((channel) => {
+            const row = document.createElement("div");
+            row.className = "kwekwe-widget-handoff-channel";
+            if (channel.url) {
+              row.innerHTML = `<strong>${this.escapeHtml(channel.label || "Link")}:</strong> <a href="${this.escapeHtml(channel.url)}" target="_blank" rel="noreferrer">${this.escapeHtml(channel.value || channel.url)}</a>`;
+            } else {
+              row.innerHTML = `<strong>${this.escapeHtml(channel.label || "Contact")}:</strong> ${this.escapeHtml(channel.value || "")}`;
+            }
+            channels.appendChild(row);
+          });
+          handoff.appendChild(channels);
+        }
+
+        if (message.handoff.recommended_action) {
+          const action = document.createElement("p");
+          action.className = "kwekwe-widget-handoff-action";
+          action.textContent = message.handoff.recommended_action;
+          handoff.appendChild(action);
+        }
+
+        content.appendChild(handoff);
       }
 
       article.appendChild(content);

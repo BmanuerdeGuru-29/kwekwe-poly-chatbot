@@ -1,109 +1,42 @@
 # Fees Structure and Admissions - Kwekwe Polytechnic
 
-## 2026 Fee Structure
+## Fee Structure Overview
 
-### Tuition Fees per Semester
+Kwekwe Polytechnic publishes official fee notices for each intake rather than a single fixed schedule.  Fees vary by division (Engineering, Commerce, Applied Sciences, Bachelor of Technology and Adult & Continuing Education), by programme level (National Certificate, National Diploma, Higher National Diploma or Bachelor of Technology) and by currency (USD and ZiG).  The assistant should not guess current amounts but can share general guidance:
 
-#### Engineering Programs
-- **USD:** $450 per semester
-- **ZiG:** 18,000 per semester
+### General Tuition and Charges
 
-#### Commerce Programs
-- **USD:** $350 per semester
-- **ZiG:** 14,000 per semester
+- **Tuition fees:** The official 2025 fee review indicated tuition per semester in the range of roughly USD $220–$320 for National Certificate and National Diploma programmes, with higher amounts for Applied Sciences and B‑Tech programmes【573113466845432†screenshot】.  Fees are reviewed annually; always consult the latest fee notice or the Accounts Office for accurate figures.
+- **Additional charges:** In addition to tuition, students may be required to pay registration fees, examination fees, workshop/practical fees, library and ICT fees, student union fees and boarding fees where applicable.
+- **Currency and conversions:** Tuition and other fees may be quoted in both US Dollars (USD) and Zimbabwe Gold (ZiG).  Payment deadlines and exchange rates are communicated in each notice.
+- **Deadlines and instalments:** Many fee notices require at least 50 % of tuition to be paid at registration with the balance due mid‑semester.  Late payment penalties or special arrangements for financial hardship may be outlined in the notice.  Students should confirm the current policy before paying.
 
-#### Applied Sciences Programs
-- **USD:** $400 per semester
-- **ZiG:** 16,000 per semester
+### Payment Channels
 
-#### B-Tech Programs
-- **USD:** $600 per semester
-- **ZiG:** 24,000 per semester
+The following public payment channels are consistently listed across official pages:
 
-#### A.C.E Programs
-- **USD:** $300 per semester
-- **ZiG:** 12,000 per semester
+- **Bank transfer:**
+  - **ZB Bank Kwekwe Branch** – USD Account 4556375118405, ZiG Account 4556375118080.
+  - **CBZ Bank Kwekwe Branch** – USD Account 10720303740098, ZiG Account 01420303740058.
+- **Mobile money:** EcoCash and OneMoney merchant numbers are available through the Accounts Office or the fee notice.
+- **Online payment:** Paynow links are available through the student portal and admissions portal.  Bank cards are accepted at the Finance Office.
 
-### Additional Fees
+### Payment Guidance
 
-#### Registration Fee (Once-off)
-- **USD:** $50
-- **ZiG:** 2,000
-
-#### Examination Fees
-- **National Certificate:** USD $30 per subject
-- **National Diploma:** USD $40 per subject
-- **Higher National Diploma:** USD $50 per subject
-- **B-Tech Programs:** USD $60 per subject
-
-#### Practical/Workshop Fees
-- **Engineering Programs:** USD $100 per semester
-- **Applied Sciences:** USD $80 per semester
-- **Other Programs:** USD $50 per semester
-
-#### Library and ICT Fees
-- **All Programs:** USD $25 per semester
-
-#### Student Union Fees
-- **All Programs:** USD $20 per semester
-
-### Payment Methods
-
-#### Bank Transfer
-**ZB Bank Kwekwe Branch:**
-- USD Account: 4556375118405
-- ZIG Account: 4556375118080
-
-**CBZ Bank Kwekwe Branch:**
-- USD Account: 10720303740098
-- ZIG Account: 01420303740058
-
-#### Mobile Money
-- **Ecocash:** Merchant number available at accounts office
-- **OneMoney:** Merchant number available at accounts office
-
-#### Online Payment
-- **Paynow:** Available through student portal
-- **Bank Cards:** Accepted at finance office
-
-### Payment Schedule
-
-#### Semester Payment Deadlines
-- **Registration Period:** Full payment or 50% minimum
-- **Mid-Semester:** Remaining balance due
-- **Late Payment Penalty:** 10% of outstanding amount
-
-#### Installment Plans
-- **2 Installments:** 50% at registration, 50% mid-semester
-- **3 Installments:** 40% at registration, 30% mid-semester, 30% end-semester
-- **Special Arrangements:** Available for documented financial hardship
+Students should pay fees only through the official channels listed above and retain proof of payment.  For the latest tuition amounts, deadlines and instalment options, refer to the most recent fee notice or contact the Accounts Office.
 
 ## Admissions Process
 
-### January 2026 Intake
+### Admissions Intakes
 
-#### Application Status
-- **Status:** Re-advertised
-- **Applications:** Currently being accepted
-- **Opening Dates:** Announced for January 2026 Intake Students
-
-#### Application Methods
-1. **Online Application:**
-   - Portal: https://apply.kwekwepoly.ac.zw
-   - Available 24/7
-   - Immediate confirmation
-
-2. **Manual Application:**
-   - Collect forms from admissions office
-   - Submit completed forms with required documents
-   - Processing time: 2-3 weeks
+Kwekwe Polytechnic accepts applications through its online admissions portal and, in some cases, via manual forms.  Intakes for different divisions may open at various points in the year.  Applicants should regularly check the admissions portal (https://apply.kwekwepoly.ac.zw) or official notices for the most up‑to‑date intake status and opening dates.  Manual applications may still be accepted at the Admissions Office; processing times vary.
 
 #### Required Documents
 - **Academic Transcripts:** Original and certified copies
 - **Birth Certificate:** Certified copy
 - **National ID:** Certified copy
-- **Passport-size Photos:** 2 recent photos
-- **Application Fee:** USD $20 (non-refundable)
+- **Passport‑size Photos:** Two recent photos
+- **Application Fee:** A nominal non‑refundable application fee may apply; consult the portal or notice for the current amount
 
 ### General Admission Requirements
 
@@ -175,30 +108,25 @@
 - **Parental Consent:** For applicants under 18 years
 - **Proof of Payment:** Fee payment receipts
 
-### Academic Calendar 2026
+### Typical Academic Calendar
 
-#### First Semester (January - May)
-- **Registration:** 2 weeks in January
-- **Teaching:** 14 weeks
-- **Examinations:** 2 weeks in May
-- **Break:** 2 weeks in June
+Kwekwe Polytechnic generally operates on a two‑semester academic calendar.  While exact dates change each year, a typical pattern is:
 
-#### Second Semester (July - November)
-- **Registration:** 1 week in July
-- **Teaching:** 14 weeks
-- **Examinations:** 2 weeks in November
-- **Break:** December - January
+#### First Semester (January – May)
+- **Registration:** Early January
+- **Teaching:** Approximately 14 weeks
+- **Examinations:** Late April or May
+- **Break:** 1–2 weeks before the second semester
+
+#### Second Semester (July – November)
+- **Registration:** Early July
+- **Teaching:** Approximately 14 weeks
+- **Examinations:** Late October or November
+- **Break:** End of year
 
 ### Important Dates
 
-#### Application Deadlines
-- **Early Bird:** November 30, 2025
-- **Regular:** December 15, 2025
-- **Late:** January 10, 2026 (with late fee)
-
-#### Registration Dates
-- **January 2026 Intake:** January 13-24, 2026
-- **Classes Commence:** January 27, 2026
+Application deadlines and registration windows vary by intake and are published in official notices.  Early‑bird deadlines are usually set about one month before the start of an intake.  Applicants should consult the admissions portal or notice for the specific dates for their desired programme.  Lectures typically commence after the registration period concludes.
 
 ### Contact Information for Admissions
 
@@ -209,20 +137,13 @@
 - **Website:** https://kwekwepoly.ac.zw
 
 #### Office Hours
-- **Monday - Friday:** 8:00 AM - 4:30 PM
-- **Saturday:** 8:00 AM - 12:00 PM
+Office hours published on official pages typically indicate:
+- **Monday – Friday:** 8:00 AM – 4:30 PM
+- **Saturday:** 8:00 AM – 12:00 PM (may vary)
 - **Sunday:** Closed
+
+Because office hours can change during holidays or special periods, applicants should confirm current times before visiting.
 
 ### Scholarships and Financial Aid
 
-#### Available Scholarships
-- **Academic Excellence:** For top-performing students
-- **Sports Scholarships:** For talented athletes
-- **Need-Based:** For financially disadvantaged students
-- **Industry-Sponsored:** For specific programs
-
-#### Application Process
-- **Deadline:** Usually March for academic year
-- **Requirements:** Application form, supporting documents
-- **Selection:** Based on merit and/or need
-- **Renewal:** Subject to academic performance
+Kwekwe Polytechnic occasionally offers scholarships and bursaries supported by government agencies, industry partners and donors.  Types of financial assistance may include awards for academic excellence, sports achievements, and need‑based support.  Availability, deadlines and eligibility criteria vary widely from year to year.  Prospective students should contact the Student Affairs or Admissions Office for up‑to‑date information on scholarships and financial aid opportunities.

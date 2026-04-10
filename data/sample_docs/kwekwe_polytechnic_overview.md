@@ -26,16 +26,22 @@ This document is a single consolidated knowledge source for the chatbot. It summ
 - The college was donated to the Government of Zimbabwe in 1981.
 - The first intake was in January 1981 and focused on Automotive, Electrical, and Mechanical Engineering.
 - The Commerce Division was introduced in 1984.
-- The website background page says the Adult and Continuing Education division was established in 2001, while the division page describes it as established in 2000. The chatbot should treat the division as having been launched around 2000-2001 and avoid stating a single year as certain unless an updated official page confirms it.
+- <!--
+  The conflicting establishment year for the Adult and Continuing Education (A.C.E.) division has been moved to the A.C.E. section below to avoid confusing mission and vision queries. The assistant should treat the division as having been launched around 2000–2001 and avoid stating a single year as certain unless an updated official page confirms it.
+  -->
 - Degree programmes were introduced in 2003.
 
-### Mission
+### Motto
 
-Kwekwe Polytechnic's mission is to provide quality technical, vocational, and technopreneurial education and training that is employable.
+Public pages prominently display Kwekwe Polytechnic’s slogan **“Beyond the information given”**【356580971203018†L87-L103】.  This motto signals a commitment to go beyond surface‑level facts and to foster deeper inquiry, innovation and service.
 
-### Vision
+### Mission (Mission Statement)
 
-The institution's vision is to be a beacon in technical and manufacturing technology education that is relevant to industry, entrepreneurship, and national development.
+Kwekwe Polytechnic’s mission is to provide **quality technical, vocational and technopreneurial education and training that is employable**【704452807136116†L73-L86】.  The institution focuses on equipping students with practical skills and entrepreneurial mind‑sets that are relevant to Zimbabwe’s development agenda.
+
+### Vision (Vision Statement)
+
+The vision is to be a **beacon in technical and manufacturing technology education** that is relevant to industry, tailored for entrepreneurship and promotes national development【704452807136116†L73-L86】.  This aligns with the national Education 5.0 philosophy of teaching, research, community service, innovation and industrialisation.
 
 ### Core Values
 
@@ -48,9 +54,24 @@ The official values are commonly listed as:
 - Improvement
 - Interplay
 
+### Leadership
+
+Public information identifies **Mr. Eddie (E.) Musara** as the current principal of Kwekwe Polytechnic【559546156821117†L96-L99】.  The institution is also organised into divisions led by the following heads:
+
+- Engineering Division – **Mr Gunda**
+- Commerce Division – **Ms S. Tauzeni**
+- Applied Sciences Division – **Mrs Mujere**
+- Adult & Continuing Education Division – **Mrs Gurajena**
+
+These leaders manage their respective departments under the oversight of the principal.
+
+## Location
+
+Public pages describe Kwekwe Polytechnic’s physical location as **No. 1 Railway Avenue, P.O. Box 399, Kwekwe, Zimbabwe**【356580971203018†L87-L103】.  The campus is situated in the Midlands Province city of Kwekwe, roughly midway between Gweru and Kadoma.  When asked about the **location** or **address**, the assistant should share this public address and emphasize that further directions can be obtained from the institution’s website or phone contacts.
+
 ## Strategic and Leadership Context
 
-- The Principal's public message describes a five-year strategic plan aligned to national development priorities.
+- The Principal, **Mr Eddie (E.) Musara**, highlights a five‑year strategic plan aligned to national development priorities【559546156821117†L96-L99】.
 - The institution positions itself around Zimbabwe's Education 5.0 philosophy:
   - Teaching
   - Research
@@ -212,6 +233,10 @@ The official B-Tech brochure and page highlight two honours degree routes:
 - Some National Certificate routes use the standard five Ordinary Level passes including English Language.
 - The division also supports more flexible and modular learning in selected practical fields.
 
+### Establishment Year
+
+Public pages differ on the year the Adult and Continuing Education division was established: some official pages cite **2000**, while others cite **2001**.  Because of this discrepancy, the assistant should state that the division was launched **around 2000–2001** rather than giving a single definitive year unless an updated official page clarifies the date.
+
 ## Admissions and Application
 
 ### Online Application
@@ -296,16 +321,18 @@ CBZ Bank, Kwekwe Branch:
 
 ### Student Affairs
 
-Public student affairs information highlights support in areas such as:
+Public student affairs information highlights a wide range of support services designed to promote student welfare and engagement.  The assistant should mention all of the following areas when asked about **student services** or **welfare**:
 
-- Catering and general student welfare
-- Health and wellness
-- Student discipline
-- Life skills and counseling support
-- Sports and recreation
-- Student governance and SRC matters
-- Gender and inclusivity support
-- Hostel and off-campus accommodation coordination
+- **Catering and general welfare:** Provision of meals and basic living support.
+- **Health and wellness:** Access to clinic services, health education and wellness programs.
+- **Student discipline:** Guidance on codes of conduct and disciplinary processes.
+- **Life skills and counselling:** Personal counselling, life‑skills coaching and mental‑health support.
+- **Sports and recreation:** Organised sports, fitness and recreational activities.
+- **Student governance and SRC matters:** Support for the Student Representative Council (SRC) and student leadership training.
+- **Gender and inclusivity:** Initiatives promoting gender equity and inclusive education.
+- **Accommodation coordination:** Administration of on‑campus hostel accommodation and assistance with off‑campus housing options.
+- **Financial aid guidance:** Information on scholarships, bursaries and hardship support.
+- **Industry and job placement:** Assistance with industrial attachment, internship and job placement opportunities.
 
 ### Accommodation
 

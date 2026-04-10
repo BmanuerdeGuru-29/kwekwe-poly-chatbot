@@ -1,269 +1,132 @@
-# Kwekwe Polytechnic Intelligent Chatbot
+# Kwekwe Polytechnic Chatbot
 
-A comprehensive AI-powered chatbot system for Kwekwe Polytechnic in Zimbabwe, providing accurate information about courses, fees, admissions, and institutional services using Retrieval-Augmented Generation (RAG).
+A rebuilt Kwekwe Polytechnic chatbot that now runs as a PHP-first application with no external server-side services. It serves the public assistant, admin console, search API, feedback capture, analytics, and floating website widget from plain PHP files and local disk storage.
 
-## 🏗️ Architecture
+## What Changed
 
-```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   React Web     │────▶│   FastAPI        │────▶│   Vector DB     │
-│   Widget        │     │   Python Backend │     │   (ChromaDB)    │
-└─────────────────┘     │   (RAG Engine)   │     └─────────────────┘
-                        │                   │            │
-┌─────────────────┐     │   - LlamaIndex    │     ┌─────▼─────────┐
-│   WhatsApp      │────▶│   - LangChain     │────▶│   LLM API      │
-│   Integration   │     │   - Async/Await   │     │   (OpenAI/Local│
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-```
+- The old FastAPI, React, Redis, and vector-database stack has been replaced.
+- Live runtime is now PHP only.
+- Python is optional and used only as an offline helper to rebuild the local knowledge index.
+- Answers come from local Markdown and text knowledge files, not from external APIs or hosted AI services.
 
-## 🚀 Features
+## Architecture
 
-### Core Functionality
-- **RAG-powered responses** grounded in verified institutional data
-- **Multi-channel support**: Web widget and WhatsApp Business Platform
-- **Session management** for multi-turn conversations
-- **Live data integration** with existing PHP systems
-- **Multi-currency support** (USD and ZiG)
+The application is intentionally simple:
 
-### Technical Features
-- **Self-hosted vector database** (ChromaDB) for data sovereignty
-- **Async/await architecture** for high concurrency
-- **Rate limiting and security** middleware
-- **Responsive design** with institutional branding
-- **Docker deployment** ready
+- `index.php`: public assistant page
+- `admin.php`: admin console with session-based sign-in
+- `api/*.php`: chat, search, feedback, and health endpoints
+- `api/admin/*.php`: analytics, knowledge, rebuild, upload, login, logout
+- `data/sample_docs`: checked-in source knowledge
+- `data/knowledge/index.json`: generated searchable index
+- `storage/analytics` and `storage/feedback`: flat-file runtime data
+- `embed.js` and `kwekwe-chat-widget.js`: portable website widget assets
 
-## 📋 Prerequisites
+## Requirements
 
-- Python 3.11+
-- Node.js 18+
-- Redis (for session management)
-- Docker & Docker Compose (optional)
+- PHP 8.1+ recommended
+- Python 3.11+ optional, only if you want to regenerate `data/knowledge/index.json` with the helper script
 
-## 🛠️ Installation
+## Quick Start
 
-### Backend Setup
+1. Copy the environment file.
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd kwekwe-chatbot
+```powershell
+Copy-Item .env.example .env
 ```
 
-2. **Create virtual environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Configure environment**
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-5. **Start the backend**
-```bash
-python main.py
-```
-
-### Frontend Setup
-
-1. **Navigate to frontend directory**
-```bash
-cd frontend
-```
-
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Start development server**
-```bash
-npm run dev
-```
-
-### Docker Deployment
-
-1. **Build and start all services**
-```bash
-cd docker
-docker-compose up -d
-```
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-Key environment variables in `.env`:
+2. Set a real admin key in `.env`.
 
 ```env
-# API Configuration
-DEBUG=true
-HOST=0.0.0.0
-PORT=8000
-
-# LLM Configuration
-OPENAI_API_KEY=your-openai-api-key
-OPENAI_MODEL=gpt-3.5-turbo
-
-# WhatsApp Business API
-WHATSAPP_PHONE_NUMBER_ID=your-phone-number-id
-WHATSAPP_ACCESS_TOKEN=your-whatsapp-access-token
-WHATSAPP_WEBHOOK_VERIFY_TOKEN=your-webhook-verify-token
-
-# Vector Database
-CHROMA_DB_PATH=./data/vector_store
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-
-# Redis
-REDIS_URL=redis://localhost:6379
+ADMIN_KEY=choose-a-strong-admin-key
 ```
 
-## 📚 Knowledge Base
+3. Optionally rebuild the knowledge index with Python.
 
-The system handles information about:
+```powershell
+python scripts\build_knowledge_index.py
+```
 
-### Academic Programs
-- **Engineering Division**: Automotive, Electrical, Mechanical
-  - Requirements: Math, English, Science at 'O' Level
-  - Department heads: Mr. Gunda (Engineering), Mr. Mutiza (Automotive), Mr. Sibanda (Electrical), Mr. Mundandi (Mechanical)
+4. Start the PHP app.
 
-- **Commerce Division**: Management, Business
-  - Requirements: English only (Management), Math & English (Business)
-  - Department heads: Mr. T. Sambama (Management), Mr. A. Vuma (Business)
+```powershell
+php -S 127.0.0.1:8000
+```
 
-### Administrative Data
-- Fee structures (USD and ZiG currencies)
-- Payment methods: Paynow, Ecocash, OneMoney, Bank transfers
-- HEXCO results and examination information
-- ICT Unit services (Mrs. R. Mahachi)
+5. Open:
 
-## 🔌 API Endpoints
+- `http://127.0.0.1:8000/index.php`
+- `http://127.0.0.1:8000/admin.php`
+- `http://127.0.0.1:8000/kwekwe-demo.html`
 
-### Chat API
-- `POST /api/v1/chat/query` - Send chat message
-- `GET /api/v1/chat/session/{session_id}` - Get session info
-- `GET /api/v1/chat/health` - Health check
+## Environment
 
-### WhatsApp Webhooks
-- `GET /api/v1/webhooks/whatsapp/verify` - Verify webhook
-- `POST /api/v1/webhooks/whatsapp/message` - Receive messages
+Supported environment variables:
 
-## 🎨 Frontend Integration
+```env
+APP_URL=http://127.0.0.1:8000
+APP_TIMEZONE=Africa/Johannesburg
+ADMIN_KEY=change-this-admin-key
+```
 
-### Embed Script
-Add this to any HTML page to embed the chatbot:
+## APIs
+
+- `POST /api/chat.php`
+- `GET|POST /api/search.php`
+- `POST /api/feedback.php`
+- `GET /api/health.php`
+- `POST /api/admin/login.php`
+- `POST /api/admin/logout.php`
+- `GET /api/admin/session.php`
+- `GET /api/admin/analytics.php`
+- `GET /api/admin/feedback.php`
+- `GET /api/admin/knowledge.php`
+- `POST /api/admin/rebuild.php`
+- `POST /api/admin/upload.php`
+
+## Widget Embed
+
+Use the floating widget on any site with:
 
 ```html
-<script src="https://your-domain.com/embed.js" 
-        data-api-url="https://your-api.com"
-        data-position="bottom-right">
-</script>
+<script
+  src="https://your-php-chat-domain.example/embed.js"
+  data-api-url="https://your-php-chat-domain.example"
+  data-kwekwe-widget
+  defer
+></script>
 ```
 
-### React Component
-```jsx
-import { ChatWidget } from './components/ChatWidget'
+There is also a reusable PHP include in `kwekwe-widget-include.php`.
 
-<ChatWidget 
-  isOpen={isOpen}
-  onToggle={() => setIsOpen(!isOpen)}
-  position="bottom-right"
-/>
+## Knowledge Sources
+
+The app indexes:
+
+- `data/sample_docs/*.md`
+- `storage/uploads/*.md`
+- `storage/uploads/*.txt`
+
+The admin console can upload new local documents and rebuild the index without needing Python.
+
+## Python Helper
+
+Python is not needed at runtime. The helper exists only for offline regeneration of the checked-in search index:
+
+```powershell
+python scripts\build_knowledge_index.py
 ```
 
-## 🧪 Testing
+It uses the Python standard library only.
 
-Run the test suite:
+## Storage
 
-```bash
-# Backend tests
-pytest tests/
+Runtime data is stored locally:
 
-# Frontend tests
-cd frontend && npm test
-```
+- analytics: `storage/analytics/chat_events.jsonl`
+- feedback: `storage/feedback/feedback.jsonl`
+- uploads: `storage/uploads`
 
-## 🔒 Security Features
+## License
 
-- **Rate limiting** to prevent abuse
-- **Input validation** and sanitization
-- **Session management** with Redis
-- **HTTPS support** with Nginx
-- **CORS configuration** for cross-origin requests
-- **Audit logging** for compliance
-
-## 📊 Monitoring
-
-### Health Checks
-- Backend: `GET /api/v1/chat/health`
-- Vector store statistics
-- Session management metrics
-
-### Logging
-- Application logs: `./logs/app.log`
-- Audit logs: `./logs/app_audit.log`
-- Structured logging with timestamps
-
-## 🚀 Deployment
-
-### Production Deployment
-
-1. **Environment setup**
-```bash
-export DEBUG=false
-export LOG_LEVEL=INFO
-```
-
-2. **Docker deployment**
-```bash
-docker-compose -f docker/docker-compose.yml up -d
-```
-
-3. **SSL Configuration**
-- Update `docker/nginx.conf` with SSL certificates
-- Configure HTTPS redirects
-
-### Scaling Considerations
-
-- **Horizontal scaling**: Multiple backend instances behind load balancer
-- **Database scaling**: Redis cluster for session management
-- **CDN**: Frontend assets served via CDN
-- **Monitoring**: Prometheus + Grafana for metrics
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 📞 Support
-
-For support and questions:
-- **Technical Issues**: Create an issue in the repository
-- **Institutional Questions**: Contact Kwekwe Polytechnic ICT Unit
-- **WhatsApp Support**: Available through the chatbot
-
-## 🗺️ Roadmap
-
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language support (Shona, Ndebele)
-- [ ] Voice integration
-- [ ] Mobile app development
-- [ ] Advanced AI features (sentiment analysis, proactive assistance)
-
----
-
-**Built with ❤️ for Kwekwe Polytechnic**
+This project is licensed under the MIT License. See `LICENSE`.

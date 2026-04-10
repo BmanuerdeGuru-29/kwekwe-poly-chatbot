@@ -1,104 +1,54 @@
 # Kwekwe Polytechnic Floating Widget Integration
 
-## Overview
+This project now serves the widget directly from the PHP application. You do not need a Python backend, Node frontend, Redis instance, or vector database.
 
-This widget is designed to mirror the compact floating assistant pattern already visible on the Kwekwe Polytechnic ICT page:
+## Basic Embed
 
-- floating launcher in the bottom-right corner
-- teaser prompt that says "Try our new chatbot!"
-- official assistant header with Kwekwe Polytechnic branding
-- quick actions for `Fees`, `Courses`, `Staff`, and `Apply`
-- same navy, gold, and cream palette used across the Kwekwe Polytechnic web presence
-
-## Best Integration Method
-
-Add one script tag to the shared website footer, template, or include file that is loaded by every page.
+Paste this before `</body>` on the target website:
 
 ```html
 <script
-  src="https://your-chatbot-host/embed.js"
-  data-api-url="https://your-chatbot-host"
+  src="https://your-php-chat-domain.example/embed.js"
+  data-api-url="https://your-php-chat-domain.example"
   data-kwekwe-widget
   defer
 ></script>
 ```
 
-If the chatbot backend is running on the same host as the script, that single line is enough.
+## What Gets Loaded
 
-## Local Example
-
-```html
-<script
-  src="http://localhost:8000/embed.js"
-  data-api-url="http://localhost:8000"
-  data-kwekwe-widget
-  defer
-></script>
-```
-
-## What the Loader Does
-
-`embed.js` automatically loads:
+The loader automatically pulls in:
 
 - `kwekwe-chat-widget.css`
 - `kwekwe-chat-widget.js`
 
-You do not need to add separate CSS or JavaScript includes when using the embed loader.
+## Expected API
 
-## Website-Wide Placement
+The widget talks to:
 
-To make the widget appear on every page, place the script in one shared layout file.
+- `POST /api/chat.php`
 
-Common examples:
+## Recommended Hosting Pattern
 
-- PHP website: shared `footer.php`, `layout.php`, or reusable include
-- WordPress: global footer or theme template
-- plain HTML site: common page template before `</body>`
+- Host the PHP chatbot on its own domain or subdomain.
+- Keep the main Kwekwe Polytechnic website unchanged except for the embed script.
+- Serve the widget and API over HTTPS in production.
 
-## Asset Endpoints
-
-When served through the chatbot backend, these routes are available:
+## Useful Endpoints
 
 - `/embed.js`
 - `/kwekwe-chat-widget.js`
 - `/kwekwe-chat-widget.css`
 - `/logo.png`
+- `/api/chat.php`
+- `/api/health.php`
 
-## Optional Customization
+## Local Test
 
-You can override default labels with data attributes:
+Run:
 
-```html
-<script
-  src="https://your-chatbot-host/embed.js"
-  data-api-url="https://your-chatbot-host"
-  data-launcher-label="Try our new chatbot!"
-  data-title="Kwekwe Poly AI"
-  data-subtitle="Official Assistant"
-  data-greeting="Hi, I am Kwekwe Polytechnic's AI assistant. Ask me about fees, courses, staff contacts, applications, accommodation, or student support."
-  data-footer-text="Kwekwe Polytechnic Official AI Assistant"
-  data-kwekwe-widget
-  defer
-></script>
+```powershell
+php -S 127.0.0.1:8000
 ```
 
-## Expected Backend API
-
-The widget sends chat requests to:
-
-- `/api/v1/chat/query`
-
-It expects the chatbot backend to be reachable at the `data-api-url` you provide.
-
-## Deployment Checklist
-
-- serve the chatbot backend over HTTPS in production
-- add the embed script once in the site-wide template
-- verify the widget opens on desktop and mobile
-- confirm the launcher appears on every page
-- test the quick chips: `Fees`, `Courses`, `Staff`, and `Apply`
-- verify the chatbot can reach the live `/api/v1/chat/query` endpoint
-
-## Demo Page
-
-Use [kwekwe-demo.html](/Users/honor/Documents/GitHub/kwekwe-poly%20chatbot/kwekwe-demo.html) to preview the widget locally.
+Then open [kwekwe-demo.html](/Users/honor/Documents/GitHub/kwekwe-poly-chatbot/kwekwe-demo.html).

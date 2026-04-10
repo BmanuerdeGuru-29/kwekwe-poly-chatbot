@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kwekwe Polytechnic Widget Demo</title>
+    <title>Kwekwe Polytechnic PHP Widget Demo</title>
     <style>
         :root {
             --navy: #1a2161;
@@ -95,9 +95,9 @@
         <section class="hero">
             <h1>Kwekwe Polytechnic Floating Widget Demo</h1>
             <p>
-                This page previews the floating assistant widget designed to mirror the
-                compact "Try our new chatbot!" experience on the Kwekwe Polytechnic site.
-                Use the launcher at the bottom-right to test the same quick-entry flow.
+                This page previews the floating assistant widget for the rebuilt PHP version
+                of the Kwekwe Polytechnic chatbot. Use the launcher at the bottom-right to
+                test the same quick-entry flow against the local PHP API.
             </p>
             <div class="chips">
                 <span class="chip">Launcher teaser</span>
@@ -113,7 +113,7 @@
                 Add this script once in the shared footer or common template used by every page.
                 The loader injects the widget CSS and JavaScript automatically.
             </p>
-            <div class="code">&lt;script src="http://localhost:8000/embed.js" data-api-url="http://localhost:8000" data-kwekwe-widget defer&gt;&lt;/script&gt;</div>
+            <div class="code">&lt;script src="./embed.js" data-api-url="./" data-kwekwe-widget defer&gt;&lt;/script&gt;</div>
         </section>
 
         <section class="section">
@@ -121,11 +121,11 @@
             <p>
                 The widget is designed for PHP-based pages and other static templates. Add the
                 script include to the global footer, layout, or reusable include file to make it
-                appear on every page automatically.
+                appear on every page automatically without any external backend services.
             </p>
         </section>
     </main>
 
-    <script src="http://localhost:8000/embed.js" data-api-url="http://localhost:8000" data-kwekwe-widget defer></script>
+    <script src="./embed.js" data-api-url="." data-kwekwe-widget defer></script>
 </body>
 </html>

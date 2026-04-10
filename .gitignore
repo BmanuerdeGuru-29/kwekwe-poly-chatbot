@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+storage/analytics/*.jsonl
+storage/feedback/*.jsonl
+storage/uploads/*
+!storage/uploads/.gitkeep
